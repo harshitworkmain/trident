@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trident - Emergency Operations Dashboard</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Dashboard Specific Styles */
+        .dashboard {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .title-section h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 0;
+        }
+
+        .nav-section {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .page-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            box-shadow: 0 6px 20px rgba(118, 75, 162, 0.4);
+        }
+
+        .nav-btn i {
+            font-size: 1rem;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .status-indicator.online {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-indicator.warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border-left: 4px solid;
+            position: relative;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.primary { border-left-color: #3b82f6; }
+        .stat-card.success { border-left-color: #10b981; }
+        .stat-card.warning { border-left-color: #f59e0b; }
+        .stat-card.danger { border-left-color: #ef4444; }
+
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-card.primary .stat-card-icon { background: #3b82f6; }
+        .stat-card.success .stat-card-icon { background: #10b981; }
+        .stat-card.warning .stat-card-icon { background: #f59e0b; }
+        .stat-card.danger .stat-card-icon { background: #ef4444; }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .main-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .panel-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .panel-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-btn {
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        /* SOS Request Management */
+        .request-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .filter-select, .search-input {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-select:focus, .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .search-input {
+            width: 250px;
+        }
+
+        .requests-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .requests-table th,
+        .requests-table td {
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .requests-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+            position: sticky;
+            top: 0;
+            font-size: 0.875rem;
+        }
+
+        .requests-table td {
+            font-size: 0.875rem;
+        }
+
+        .requests-table tr:hover {
+            background: #f8fafc;
+        }
+
+        /* Specific column widths to prevent wrapping */
+        .requests-table th:nth-child(1), /* Reference ID */
+        .requests-table td:nth-child(1) {
+            min-width: 140px;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+
+        .requests-table th:nth-child(2), /* Name */
+        .requests-table td:nth-child(2) {
+            min-width: 120px;
+        }
+
+        .requests-table th:nth-child(3), /* Location */
+        .requests-table td:nth-child(3) {
+            min-width: 100px;
+        }
+
+        .requests-table th:nth-child(4), /* Emergency Type */
+        .requests-table td:nth-child(4) {
+            min-width: 100px;
+        }
+
+        .requests-table th:nth-child(5), /* Priority */
+        .requests-table td:nth-child(5) {
+            min-width: 90px;
+            text-align: center;
+        }
+
+        .requests-table th:nth-child(6), /* Status */
+        .requests-table td:nth-child(6) {
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .requests-table th:nth-child(7), /* Team */
+        .requests-table td:nth-child(7) {
+            min-width: 120px;
+        }
+
+        .requests-table th:nth-child(8), /* Actions */
+        .requests-table td:nth-child(8) {
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .priority-badge, .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+            display: inline-block;
+            min-width: fit-content;
+        }
+
+        .priority-1 { background: #dbeafe; color: #1e40af; }
+        .priority-2 { background: #fef3c7; color: #d97706; }
+        .priority-3 { background: #fed7aa; color: #ea580c; }
+        .priority-4 { background: #fecaca; color: #dc2626; }
+        .priority-5 { background: #fda4af; color: #be185d; }
+
+        .status-pending { background: #fef3c7; color: #d97706; }
+        .status-assigned { background: #dbeafe; color: #1e40af; }
+        .status-in-progress { background: #dcfce7; color: #16a34a; }
+        .status-resolved { background: #d1fae5; color: #065f46; }
+        .status-cancelled { background: #fee2e2; color: #dc2626; }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 0.25rem 0.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .btn-view { background: #e0e7ff; color: #3730a3; }
+        .btn-assign { background: #dbeafe; color: #1e40af; }
+        .btn-update { background: #fef3c7; color: #d97706; }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Device Items */
+        .device-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .device-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .device-item:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+        }
+
+        .device-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .device-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .device-rov { background: #3b82f6; }
+        .device-wearable { background: #10b981; }
+
+        .device-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .contact-item .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-available { background: #10b981; }
+        .status-busy { background: #f59e0b; }
+        .status-offline { background: #ef4444; }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6b7280;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .requests-table {
+                font-size: 0.875rem;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            .requests-table th,
+            .requests-table td {
+                padding: 0.5rem 0.25rem;
+                font-size: 0.75rem;
+            }
+            
+            .requests-table th:nth-child(1),
+            .requests-table td:nth-child(1) {
+                min-width: 100px;
+                font-size: 0.7rem;
+            }
+
+            .dashboard-title {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .nav-section {
+                width: 100%;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .page-nav {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .system-status {
+                align-self: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .title-section h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="dashboard-title">
+                <div class="title-section">
+                    <h1>
+                        <i class="fas fa-shield-alt"></i>
+                        Emergency Operations Center
+                    </h1>
+                </div>
+                <div class="nav-section">
+                    <div class="system-status">
+                        <div class="status-indicator online">
+                            <i class="fas fa-circle"></i>
+                            System Online
+                        </div>
+                        <div class="status-indicator warning" id="alertStatus" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Emergency Alert
+                        </div>
+                    </div>
+                    <div class="page-nav">
+                        <a href="/dashboard" class="nav-btn active">
+                            <i class="fas fa-tachometer-alt"></i>
+                            Dashboard
+                        </a>
+                        <a href="/analytics" class="nav-btn">
+                            <i class="fas fa-chart-line"></i>
+                            Analytics
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="dashboard-stats">
+            <div class="stat-card danger">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="stat-number" id="pendingRequests">0</div>
+                <div class="stat-label">Pending Requests</div>
+            </div>
+            
+            <div class="stat-card warning">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                </div>
+                <div class="stat-number" id="activeTeams">0</div>
+                <div class="stat-label">Active Teams</div>
+            </div>
+            
+            <div class="stat-card primary">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                </div>
+                <div class="stat-number" id="deployedROVs">1</div>
+                <div class="stat-label">Deployed ROVs</div>
+            </div>
+            
+            <div class="stat-card success">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                </div>
+                <div class="stat-number" id="connectedWearables">12</div>
+                <div class="stat-label">Connected Wearables</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <div class="main-panel">
+                <div class="panel-header">
+                    <h3>
+                        <i class="fas fa-tasks"></i>
+                        SOS Request Management
+                    </h3>
+                    <button class="refresh-btn" onclick="refreshRequests()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                
+                <div class="request-controls">
+                    <div class="filter-group">
+                        <select class="filter-select" id="statusFilter" onchange="filterRequests()">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="assigned">Assigned</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                        
+                        <select class="filter-select" id="priorityFilter" onchange="filterRequests()">
+                            <option value="">All Priorities</option>
+                            <option value="5">Critical (5)</option>
+                            <option value="4">High (4)</option>
+                            <option value="3">Medium (3)</option>
+                            <option value="2">Low (2)</option>
+                            <option value="1">Minimal (1)</option>
+                        </select>
+                    </div>
+                    
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search by name, city, or reference..." onkeyup="filterRequests()">
+                </div>
+
+                <div style="max-height: 600px; overflow-y: auto;">
+                    <table class="requests-table">
+                        <thead>
+                            <tr>
+                                <th>Reference ID</th>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Emergency Type</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Team</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requestsTableBody">
+                            <!-- Dynamic content will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="side-panel">
+                <!-- ROV Status -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>
+                            <i class="fas fa-robot"></i>
+                            ROV Status
+                        </h3>
+                        <button class="refresh-btn" onclick="refreshROVStatus()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="device-list" id="rovList">
+                        <!-- ROV devices will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Wearable Devices -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>
+                            <i class="fas fa-heartbeat"></i>
+                            Wearable Devices
+                        </h3>
+                        <button class="refresh-btn" onclick="refreshWearableStatus()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="device-list" id="wearableList">
+                        <!-- Wearable devices will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Request Details Modal -->
+    <div id="requestModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Request Details</h3>
+                <button class="close-btn" onclick="closeModal('requestModal')">&times;</button>
+            </div>
+            <div id="requestDetails">
+                <!-- Request details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign Team Modal -->
+    <div id="assignModal" class="modal">
+        <div class="modal-content status-modal-centered">
+            <div class="modal-header">
+                <i class="fas fa-user-friends"></i>
+                <h3 class="modal-title">Assign Response Team</h3>
+                <button class="close-btn" onclick="closeModal('assignModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="assignTeam(event)">
+                    <input type="hidden" id="assignRequestId">
+                    <div class="form-group">
+                        <h4 class="form-heading">Select Team:</h4>
+                        <select id="teamSelect" required>
+                            <option value="">Choose available response team...</option>
+                            <!-- Teams will be loaded here -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <h4 class="form-heading">Assignment Notes:</h4>
+                        <textarea id="assignmentNotes" rows="4" placeholder="📝 Provide details about this team assignment...
+
+Examples:
+• Team dispatched for water rescue operation
+• ROV deployment authorized for emergency
+• Supply team coordinating with local authorities
+• Backup team on standby"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-user-plus"></i> Assign Team
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="closeModal('assignModal')">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Status Modal -->
+    <div id="statusModal" class="modal">
+        <div class="modal-content status-modal-centered">
+            <div class="modal-header">
+                <i class="fas fa-clipboard-check"></i>
+                <h3 class="modal-title">Update Request Status</h3>
+                <button class="close-btn" onclick="closeModal('statusModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="updateStatus(event)">
+                    <input type="hidden" id="statusRequestId">
+                    <div class="form-group">
+                        <h4 class="form-heading">New Status:</h4>
+                        <select id="newStatus" required>
+                            <option value="">Select new status...</option>
+                            <option value="pending">🔄 Pending</option>
+                            <option value="assigned">👥 Assigned</option>
+                            <option value="in-progress">🚨 In Progress</option>
+                            <option value="resolved">✅ Resolved</option>
+                            <option value="cancelled">❌ Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <h4 class="form-heading">Status Notes:</h4>
+                        <textarea id="statusNotes" rows="4" placeholder="💬 Provide details about this status update...
+
+Examples:
+• Team dispatched to location
+• Rescue operation completed
+• Equipment deployed successfully
+• Request cancelled due to false alarm"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Update Status
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="closeModal('statusModal')">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../dashboard.js"></script>
+</body>
+
+</html>

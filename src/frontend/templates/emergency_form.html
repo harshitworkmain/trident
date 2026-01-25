@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trident - Disaster Help & SOS System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <h1>TRIDENT</h1>
+            </div>
+            <nav class="nav">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#sos" class="nav-link">SOS</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h2 class="hero-title">Emergency Response System</h2>
+                <p class="hero-subtitle">Quick and reliable disaster assistance when you need it most</p>
+                <div class="hero-buttons">
+                    <a href="#sos" class="btn btn-primary">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Send SOS
+                    </a>
+                    <a href="#about" class="btn btn-secondary">
+                        <i class="fas fa-info-circle"></i>
+                        Learn More
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="emergency-icon">
+                    <i class="fas fa-anchor"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOS Form Section -->
+    <section id="sos" class="sos-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Emergency SOS Report</h2>
+                <p>Fill out the form below to request immediate assistance</p>
+            </div>
+            
+            <div class="sos-form-container">
+                <form id="sosForm" class="sos-form">
+                    <!-- Personal Information -->
+                    <div class="form-section">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" id="name" name="name" required placeholder="Full Name *">
+                            </div>
+                            <div class="form-group">
+                                <input type="number" id="age" name="age" min="1" max="120" required placeholder="Age *">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="tel" id="phone" name="phone" required placeholder="Phone Number *">
+                            </div>
+                            <div class="form-group">
+                                <input type="email" id="email" name="email" placeholder="Email (Optional)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location Information -->
+                    <div class="form-section">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <textarea id="address" name="address" rows="3" required placeholder="Current Address with Landmarks *"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" id="city" name="city" required placeholder="City *">
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="pincode" name="pincode" required placeholder="Pincode *">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Emergency Details -->
+                    <div class="form-section">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="number" id="peopleToRescue" name="peopleToRescue" min="1" required placeholder="Number of People Needing Rescue *">
+                            </div>
+                            <div class="form-group">
+                                <input type="number" id="peopleInjured" name="peopleInjured" min="0" required placeholder="Number of People Injured *">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <select id="foodAvailability" name="foodAvailability" required>
+                                    <option value="">Food Availability *</option>
+                                    <option value="sufficient">Sufficient (3+ days)</option>
+                                    <option value="limited">Limited (1-2 days)</option>
+                                    <option value="critical">Critical (Less than 1 day)</option>
+                                    <option value="none">No food available</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <select id="waterAvailability" name="waterAvailability" required>
+                                    <option value="">Water Availability *</option>
+                                    <option value="sufficient">Sufficient</option>
+                                    <option value="limited">Limited</option>
+                                    <option value="critical">Critical</option>
+                                    <option value="none">No water available</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Special Conditions -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-heart"></i> Special Conditions</h3>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="pregnant" name="pregnant">
+                                <label for="pregnant">Pregnant person(s) present</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="elderly" name="elderly">
+                                <label for="elderly">Elderly person(s) present (65+ years)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="children" name="children">
+                                <label for="children">Children present (under 12 years)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="disabled" name="disabled">
+                                <label for="disabled">Person(s) with disabilities present</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="medical" name="medical">
+                                <label for="medical">Person(s) requiring medical attention</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Emergency Type -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-water"></i> Type of Water Emergency</h3>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" id="flood" name="emergencyType" value="flood" required>
+                                <label for="flood">Flood</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="tsunami" name="emergencyType" value="tsunami" required>
+                                <label for="tsunami">Tsunami</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="storm" name="emergencyType" value="storm" required>
+                                <label for="storm">Storm/Cyclone</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="coastal-erosion" name="emergencyType" value="coastal-erosion" required>
+                                <label for="coastal-erosion">Coastal Erosion</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="dam-breach" name="emergencyType" value="dam-breach" required>
+                                <label for="dam-breach">Dam Breach</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="water-level-rising" name="emergencyType" value="water-level-rising" required>
+                                <label for="water-level-rising">Water Level Rising</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div class="form-section">
+                        <div class="form-group">
+                            <textarea id="additionalInfo" name="additionalInfo" rows="4" placeholder="Additional information that might help water rescue teams (optional)..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-sos">
+                            <i class="fas fa-paper-plane"></i>
+                            Send SOS Request
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                            <i class="fas fa-undo"></i>
+                            Clear Form
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>About Trident</h2>
+                <p>Your trusted emergency response system</p>
+            </div>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>Mission</h3>
+                    <p>Trident is designed to provide rapid emergency response and disaster assistance. Our system connects people in distress with rescue teams and emergency services to ensure timely help during critical situations.</p>
+                    
+                    <h3>Features</h3>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Quick SOS reporting system</li>
+                        <li><i class="fas fa-check"></i> Real-time emergency tracking</li>
+                        <li><i class="fas fa-check"></i> Priority-based rescue coordination</li>
+                        <li><i class="fas fa-check"></i> Special needs identification</li>
+                        <li><i class="fas fa-check"></i> Resource availability tracking</li>
+                    </ul>
+                </div>
+                <div class="about-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Emergency Support</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">< 5min</div>
+                        <div class="stat-label">Response Time</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">1000+</div>
+                        <div class="stat-label">Lives Saved</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Emergency Contacts</h2>
+                <p>Direct emergency numbers for immediate assistance</p>
+            </div>
+            <div class="contact-grid">
+                <div class="contact-card">
+                    <i class="fas fa-phone"></i>
+                    <h3>Emergency Services</h3>
+                    <p>100</p>
+                </div>
+                <div class="contact-card">
+                    <i class="fas fa-fire"></i>
+                    <h3>Fire Department</h3>
+                    <p>101</p>
+                </div>
+                <div class="contact-card">
+                    <i class="fas fa-ambulance"></i>
+                    <h3>Medical Emergency</h3>
+                    <p>108</p>
+                </div>
+                <div class="contact-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Police</h3>
+                    <p>100</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>TRIDENT</h3>
+                </div>
+                <p>&copy; 2024 Trident Emergency Response System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-check-circle"></i>
+                <h3>SOS Request Sent Successfully!</h3>
+            </div>
+            <div class="modal-body">
+                <p>Your emergency request has been received and is being processed. Rescue teams will be dispatched shortly.</p>
+                <div class="modal-info">
+                    <p><strong>Reference ID:</strong> <span id="referenceId"></span></p>
+                    <p><strong>Estimated Response Time:</strong> 5-15 minutes</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeModal()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

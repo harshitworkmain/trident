@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trident - Modern UI Demo</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <h1>TRIDENT</h1>
+            </div>
+            <nav class="nav">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#sos" class="nav-link">SOS</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h2 class="hero-title">Emergency Response System</h2>
+                <p class="hero-subtitle">Quick and reliable disaster assistance when you need it most</p>
+                <div class="hero-buttons">
+                    <a href="#sos" class="btn btn-primary">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Send SOS
+                    </a>
+                    <a href="#about" class="btn btn-secondary">
+                        <i class="fas fa-info-circle"></i>
+                        Learn More
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="emergency-icon">
+                    <i class="fas fa-helicopter"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modern Features Demo -->
+    <section class="sos-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Modern UI Features</h2>
+                <p>Experience the sleek, interactive design</p>
+            </div>
+            
+            <div class="sos-form-container">
+                <div class="sos-form">
+                    <!-- Form Progress Bar -->
+                    <div class="form-progress">
+                        <div class="progress-fill" style="width: 60%;"></div>
+                    </div>
+                    
+                    <!-- Interactive Form Section -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-user"></i> Interactive Elements</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" id="demo-name" placeholder=" " required>
+                                <label for="demo-name">Floating Label</label>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" id="demo-email" placeholder=" " required>
+                                <label for="demo-email">Email with Validation</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <select id="demo-select" required>
+                                    <option value="">Select an option</option>
+                                    <option value="option1">Option 1</option>
+                                    <option value="option2">Option 2</option>
+                                    <option value="option3">Option 3</option>
+                                </select>
+                                <label for="demo-select">Modern Dropdown</label>
+                            </div>
+                            <div class="form-group">
+                                <textarea id="demo-textarea" placeholder=" " rows="3"></textarea>
+                                <label for="demo-textarea">Animated Textarea</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Interactive Checkboxes -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-heart"></i> Interactive Checkboxes</h3>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="demo-check1">
+                                <label for="demo-check1">Hover Effect</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="demo-check2" checked>
+                                <label for="demo-check2">Pre-selected</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="demo-check3">
+                                <label for="demo-check3">Smooth Animation</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Modern Buttons -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-magic"></i> Modern Buttons</h3>
+                        <div class="form-actions">
+                            <button class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                                Ripple Effect
+                            </button>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-heart"></i>
+                                Glass Effect
+                            </button>
+                            <button class="btn btn-sos">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Pulsing SOS
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Showcase -->
+    <section class="about-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Modern Features</h2>
+                <p>Cutting-edge UI/UX design</p>
+            </div>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>✨ Modern Design Elements</h3>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Glassmorphism effects with backdrop blur</li>
+                        <li><i class="fas fa-check"></i> Smooth animations and transitions</li>
+                        <li><i class="fas fa-check"></i> Interactive hover effects</li>
+                        <li><i class="fas fa-check"></i> Ripple effects on button clicks</li>
+                        <li><i class="fas fa-check"></i> Floating labels with smooth transitions</li>
+                        <li><i class="fas fa-check"></i> Progress indicators</li>
+                        <li><i class="fas fa-check"></i> Parallax scrolling effects</li>
+                        <li><i class="fas fa-check"></i> Modern color gradients</li>
+                    </ul>
+                </div>
+                <div class="about-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">60fps</div>
+                        <div class="stat-label">Smooth Animations</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Responsive Design</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">Modern</div>
+                        <div class="stat-label">UI/UX</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
