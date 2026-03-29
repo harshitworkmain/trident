@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/images/TRIDENT_logo.png" alt="TRIDENT Logo" width="400"/>
+</p>
+
 # TRIDENT - Integrated Disaster Response & Rescue Ecosystem
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -5,26 +9,71 @@
 [![Flask](https://img.shields.io/badge/flask-2.0+-green.svg)](https://flask.palletsprojects.com/)
 [![PlatformIO](https://img.shields.io/badge/platformio-6.0+-red.svg)](https://platformio.org/)
 
-A comprehensive, modular disaster response ecosystem designed to improve situational awareness, rescue prioritization, and response speed during flood and water-related emergencies.
+This is an integrated disaster rescue ecosystem that enables real-time situational awareness, predictive risk analysis, and priority classification. It combines a multi-sensor wearable (ESP32, MAX30102, GSR, MPU6050, NEO-6M GPS, buzzer) and an underwater ROV (Arduino Uno, 4x thrusters, LiPo) with an AI-powered Flask central orchestrator.
+
+## 🎥 Demonstration
+
+Watch the multi-functional health & safety wearable in action:
+
+<video src="https://github.com/harshitworkmain/trident/raw/main/assets/videos/wearable-demo.mp4" controls="controls" style="max-width: 100%;"></video>
+
+*(Note: Video playback might require viewing on standard GitHub web. A direct download or raw viewing might be necessary depending on your device.)*
 
 ## 🏗️ System Architecture
+
+![System Architecture](assets/images/architecture.png)
+![TRIDENT Infographic](assets/images/infog-trident.png)
 
 TRIDENT operates across three integrated layers:
 
 ### 📱 Smart Wearable (Edge Layer)
+<p align="center">
+  <img src="assets/images/infog-wearable.png" alt="Wearable Infographic" width="600"/>
+</p>
+
 - ESP32-based embedded firmware with multi-sensor integration
 - Real-time vital signs, motion, and GPS monitoring
 - Edge-based emergency detection and alert generation
 
 ### 🖥️ Central Command Dashboard (Decision Layer)
+![Command Dashboard](assets/images/dashboard-photo.jpg)
+
 - Web-based emergency response coordination interface
 - AI-powered priority classification and resource allocation
 - Real-time visualization of incidents and response teams
+
+**Live Telemetry Data Feed:**
+![Live Telemetry](assets/images/wearable-live-telemetry-data.png)
 
 ### 🚁 Autonomous ROV (Action Layer)
 - Remote-controlled deployment system for emergency scenarios
 - Sensor integration for environmental assessment
 - Automated navigation to high-priority locations
+
+## 🛠️ Hardware Engineering & Design
+
+### Wearable Component
+The wearable hardware was designed meticulously integrating multiple bio-sensors and embedded modules.
+<p float="left">
+  <img src="assets/images/cad/wearable-isometric.jpg" width="400"/>
+  <img src="assets/images/cad/wearable-disassembled-view.jpg" width="400"/>
+</p>
+<p float="left">
+  <img src="assets/images/cad/wearable-pcb-cad.jpg" width="400"/>
+</p>
+
+**CAD Flythrough:**
+<video src="https://github.com/harshitworkmain/trident/raw/main/assets/videos/Wearable-cad.mp4" controls="controls" style="max-width: 100%;"></video>
+
+### Autonomous ROV
+The underwater ROV undergoes rigorous fluid dynamics analysis to ensure stability under water currents.
+<p float="left">
+  <img src="assets/images/cad/rov-isometric-view.jpg" width="400"/>
+  <img src="assets/images/cfd.jpg" width="400"/>
+</p>
+
+**ROV Field Deployment:**
+<video src="https://github.com/harshitworkmain/trident/raw/main/assets/videos/finalrov.mp4" controls="controls" style="max-width: 100%;"></video>
 
 ## 🚀 Quick Start
 
@@ -80,7 +129,7 @@ trident/
 ├── data/                   # Data files and models
 ├── docs/                   # Documentation
 ├── scripts/                # Utility scripts
-├── assets/                 # Static resources
+├── assets/                 # Static resources (Images, Videos, CADs)
 └── config/                 # Configuration files
 ```
 
@@ -216,6 +265,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Fire Department**: 101
 - **Medical Emergency**: 108
 - **Disaster Management**: 108
+
+## 🧑‍🤝‍🧑 Meet the Team
+![Team Photo](assets/images/team-photo.jpg)
 
 ## 🔮 Future Enhancements
 
