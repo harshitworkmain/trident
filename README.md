@@ -50,6 +50,11 @@ TRIDENT operates across three integrated layers:
 - Sensor integration for environmental assessment
 - Automated navigation to high-priority locations
 
+### 👁️ Computer Vision Subsystem (Perception Layer)
+- Real-time person, obstacle, and object detection using YOLOv8
+- LBPH face recognition with name-ID mapping database
+- Stereo-distance estimation and Text-to-Speech (TTS) alerts for navigation assistance
+
 ## 🛠️ Hardware Engineering & Design
 
 ### Wearable Component
@@ -125,6 +130,7 @@ trident/
 │   ├── backend/            # Flask API server
 │   ├── ml/                 # Machine learning models
 │   ├── rov/                # ROV control system
+│   ├── cv/                 # Computer vision subsystem (YOLOv8 & face recognition)
 │   └── frontend/           # Web interface
 ├── data/                   # Data files and models
 ├── docs/                   # Documentation
@@ -170,6 +176,20 @@ python -m http.server 8080 --directory src/frontend/static
 python src/rov/communication/serial_interface.py
 ```
 
+### Computer Vision (CV) Pipeline
+```bash
+# Step 1: Capture face training data
+cd src/cv/face_recognition
+python3 src/face_taker.py
+
+# Step 2: Train LBPH model
+python3 src/face_trainer.py
+
+# Step 3: Run YOLOv8 + Face Recognition combined loop
+cd ../yolov8_model
+python3 main.py
+```
+
 ## 🧠 Machine Learning Components
 
 ### Weather Prediction
@@ -190,6 +210,8 @@ python src/rov/communication/serial_interface.py
 - **Vital Signs Monitoring**: MAX30102 heart rate and SpO2
 - **Stress Assessment**: GSR sensor integration
 - **Location Tracking**: GPS with geofencing
+- **Obstacle & Person Detection**: Real-time YOLOv8 object detection with voice feedback
+- **Facial Recognition**: LBPH face recognizer with name mapping and distance tracking
 
 ### Priority Classification
 - Automated severity scoring
