@@ -3,14 +3,15 @@
 ## ✅ Pre-Deployment Checklist
 
 ### 1. **File Structure Verification**
-- [ ] `app.py` - Main Flask application
+- [ ] `app.py` - Main Flask entrypoint
 - [ ] `requirements.txt` - Python dependencies
-- [ ] `templates/` folder with all HTML files:
-  - [ ] `index.html` - Main SOS form
-  - [ ] `dashboard.html` - Live dashboard
-  - [ ] `analytics.html` - Analytics dashboard
-- [ ] `styles.css` - Main stylesheet
-- [ ] `script.js` - Frontend JavaScript
+- [ ] `src/frontend/templates/` folder containing the unified interface:
+  - [ ] `platform.html` - Consolidated SOS, Dashboard, and Analytics UI
+- [ ] `src/frontend/static/` folder containing assets:
+  - [ ] `css/main_styles.css` - Theme and interface styles
+  - [ ] `js/platform.js` - Tab routing controller
+  - [ ] `js/main_app.js` - SOS form interactive script
+  - [ ] `js/dashboard.js` - Command dashboard monitoring script
 - [ ] `start_app.bat` - Windows startup script
 - [ ] `start_app.sh` - Linux/Mac startup script
 
@@ -57,22 +58,22 @@ python app.py
 
 After successful deployment, access:
 
-| Page | URL | Description |
-|------|-----|-------------|
-| **Home** | http://localhost:5000 | Emergency SOS form |
-| **Dashboard** | http://localhost:5000/dashboard | Live emergency monitoring |
-| **Analytics** | http://localhost:5000/analytics | Detailed analytics & trends |
+| Page / Tab | URL | Description |
+|------------|-----|-------------|
+| **Home (SOS)** | http://localhost:5000 (or `/#sos`) | Unified SOS form |
+| **Dashboard** | http://localhost:5000/dashboard (or `/#dashboard`) | Live emergency monitoring tab |
+| **Analytics** | http://localhost:5000/analytics (or `/#analytics`) | Detailed analytics & trends tab |
 
 ## 🔧 Configuration Options
 
 ### **Change Port**
-Edit `app.py` line 662:
+Edit `app.py`:
 ```python
 app.run(debug=True, host='0.0.0.0', port=8080)  # Change 5000 to desired port
 ```
 
 ### **Production Mode**
-Edit `app.py` line 662:
+Edit `app.py`:
 ```python
 app.run(debug=False, host='0.0.0.0', port=5000)  # Set debug=False
 ```

@@ -3,11 +3,8 @@ let allRequests = [];
 let allTeams = [];
 let refreshInterval = null;
 
-// Initialize dashboard on page load
-document.addEventListener('DOMContentLoaded', function() {
-    initializeDashboard();
-    setupAutoRefresh();
-});
+// NOTE: initializeDashboard() is called by platform.js when the dashboard tab is selected.
+// Do not auto-init here to avoid loading data when the tab is not visible.
 
 // Initialize dashboard data
 async function initializeDashboard() {
@@ -523,7 +520,7 @@ window.addEventListener('beforeunload', function() {
 });
 
 // Add CSS animations
-const style = document.createElement('style');
+(function() { const style = document.createElement('style');
 style.textContent = `
     @keyframes slideInRight {
         from {
@@ -578,4 +575,4 @@ style.textContent = `
         grid-column: 1 / -1;
     }
 `;
-document.head.appendChild(style);
+document.head.appendChild(style); })();

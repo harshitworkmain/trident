@@ -1,0 +1,2959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trident — Unified Command Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ========= Platform Header ========= */
+        .platform-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(102, 126, 234, 0.15);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .platform-header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 2rem;
+            gap: 2rem;
+        }
+
+        .platform-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .platform-brand i {
+            font-size: 1.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .platform-nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .platform-nav .nav-tab {
+            padding: 0.6rem 1.4rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: transparent;
+            color: #64748b;
+        }
+
+        .platform-nav .nav-tab:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            transform: translateY(-1px);
+        }
+
+        .platform-nav .nav-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35);
+        }
+
+        .platform-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #10b981;
+            white-space: nowrap;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.online {
+            background: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            .platform-header-inner {
+                flex-direction: column;
+                padding: 0.75rem 1rem;
+                gap: 0.75rem;
+            }
+            .platform-nav {
+                width: 100%;
+                justify-content: center;
+            }
+            .platform-nav .nav-tab {
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+            }
+            .platform-status {
+                display: none;
+            }
+        }
+
+        /* ========= Dashboard-specific styles ========= */
+
+        /* Dashboard Specific Styles */
+        .dashboard {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .title-section h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 0;
+        }
+
+        .nav-section {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .page-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            box-shadow: 0 6px 20px rgba(118, 75, 162, 0.4);
+        }
+
+        .nav-btn i {
+            font-size: 1rem;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .status-indicator.online {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-indicator.warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border-left: 4px solid;
+            position: relative;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.primary { border-left-color: #3b82f6; }
+        .stat-card.success { border-left-color: #10b981; }
+        .stat-card.warning { border-left-color: #f59e0b; }
+        .stat-card.danger { border-left-color: #ef4444; }
+
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-card.primary .stat-card-icon { background: #3b82f6; }
+        .stat-card.success .stat-card-icon { background: #10b981; }
+        .stat-card.warning .stat-card-icon { background: #f59e0b; }
+        .stat-card.danger .stat-card-icon { background: #ef4444; }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .main-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .panel-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .panel-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-btn {
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        /* SOS Request Management */
+        .request-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .filter-select, .search-input {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-select:focus, .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .search-input {
+            width: 250px;
+        }
+
+        .requests-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .requests-table th,
+        .requests-table td {
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .requests-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+            position: sticky;
+            top: 0;
+            font-size: 0.875rem;
+        }
+
+        .requests-table td {
+            font-size: 0.875rem;
+        }
+
+        .requests-table tr:hover {
+            background: #f8fafc;
+        }
+
+        /* Specific column widths to prevent wrapping */
+        .requests-table th:nth-child(1), /* Reference ID */
+        .requests-table td:nth-child(1) {
+            min-width: 140px;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+
+        .requests-table th:nth-child(2), /* Name */
+        .requests-table td:nth-child(2) {
+            min-width: 120px;
+        }
+
+        .requests-table th:nth-child(3), /* Location */
+        .requests-table td:nth-child(3) {
+            min-width: 100px;
+        }
+
+        .requests-table th:nth-child(4), /* Emergency Type */
+        .requests-table td:nth-child(4) {
+            min-width: 100px;
+        }
+
+        .requests-table th:nth-child(5), /* Priority */
+        .requests-table td:nth-child(5) {
+            min-width: 90px;
+            text-align: center;
+        }
+
+        .requests-table th:nth-child(6), /* Status */
+        .requests-table td:nth-child(6) {
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .requests-table th:nth-child(7), /* Team */
+        .requests-table td:nth-child(7) {
+            min-width: 120px;
+        }
+
+        .requests-table th:nth-child(8), /* Actions */
+        .requests-table td:nth-child(8) {
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .priority-badge, .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+            display: inline-block;
+            min-width: fit-content;
+        }
+
+        .priority-1 { background: #dbeafe; color: #1e40af; }
+        .priority-2 { background: #fef3c7; color: #d97706; }
+        .priority-3 { background: #fed7aa; color: #ea580c; }
+        .priority-4 { background: #fecaca; color: #dc2626; }
+        .priority-5 { background: #fda4af; color: #be185d; }
+
+        .status-pending { background: #fef3c7; color: #d97706; }
+        .status-assigned { background: #dbeafe; color: #1e40af; }
+        .status-in-progress { background: #dcfce7; color: #16a34a; }
+        .status-resolved { background: #d1fae5; color: #065f46; }
+        .status-cancelled { background: #fee2e2; color: #dc2626; }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 0.25rem 0.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .btn-view { background: #e0e7ff; color: #3730a3; }
+        .btn-assign { background: #dbeafe; color: #1e40af; }
+        .btn-update { background: #fef3c7; color: #d97706; }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Device Items */
+        .device-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .device-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .device-item:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+        }
+
+        .device-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .device-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .device-rov { background: #3b82f6; }
+        .device-wearable { background: #10b981; }
+
+        .device-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .contact-item .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-available { background: #10b981; }
+        .status-busy { background: #f59e0b; }
+        .status-offline { background: #ef4444; }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6b7280;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .requests-table {
+                font-size: 0.875rem;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            .requests-table th,
+            .requests-table td {
+                padding: 0.5rem 0.25rem;
+                font-size: 0.75rem;
+            }
+            
+            .requests-table th:nth-child(1),
+            .requests-table td:nth-child(1) {
+                min-width: 100px;
+                font-size: 0.7rem;
+            }
+
+            .dashboard-title {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .nav-section {
+                width: 100%;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .page-nav {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .system-status {
+                align-self: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .title-section h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    
+
+        /* ========= Analytics-specific styles ========= */
+
+        /* Analytics Dashboard Styles */
+        .analytics-dashboard {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .analytics-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .analytics-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .analytics-title h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .analytics-nav {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: #374151;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn.active {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            box-shadow: 0 6px 20px rgba(118, 75, 162, 0.4);
+        }
+
+        .nav-btn i {
+            font-size: 1rem;
+        }
+
+        .analytics-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .analytics-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .analytics-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .analytics-card h3 i {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-card.primary { border-left-color: #3b82f6; }
+        .metric-card.success { border-left-color: #10b981; }
+        .metric-card.warning { border-left-color: #f59e0b; }
+        .metric-card.danger { border-left-color: #ef4444; }
+
+        .metric-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .metric-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .metric-card.primary .metric-icon { background: #3b82f6; }
+        .metric-card.success .metric-icon { background: #10b981; }
+        .metric-card.warning .metric-icon { background: #f59e0b; }
+        .metric-card.danger .metric-icon { background: #ef4444; }
+
+        .metric-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .metric-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .metric-change {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .metric-change.positive { color: #10b981; }
+        .metric-change.negative { color: #ef4444; }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .data-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #64748b;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            border-left: 4px solid #dc2626;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .analytics-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .analytics-nav {
+                flex-wrap: wrap;
+            }
+            
+            .analytics-title {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .analytics-title h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-btn, .tab-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    
+    </style>
+</head>
+<body>
+    <!-- ===== UNIFIED PLATFORM HEADER ===== -->
+    <header class="platform-header">
+        <div class="platform-header-inner">
+            <div class="platform-brand">
+                <i class="fas fa-shield-alt"></i>
+                <span>TRIDENT</span>
+            </div>
+            <nav class="platform-nav">
+                <button class="nav-tab active" data-tab="sos" onclick="switchTab('sos')">
+                    <i class="fas fa-exclamation-triangle"></i> SOS
+                </button>
+                <button class="nav-tab" data-tab="dashboard" onclick="switchTab('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </button>
+                <button class="nav-tab" data-tab="analytics" onclick="switchTab('analytics')">
+                    <i class="fas fa-chart-line"></i> Analytics
+                </button>
+            </nav>
+            <div class="platform-status">
+                <span class="status-dot online"></span>
+                System Online
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== TAB PANE: SOS ===== -->
+    <div id="pane-sos" style="display: block;">
+
+    
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h2 class="hero-title">Emergency Response System</h2>
+                <p class="hero-subtitle">Quick and reliable disaster assistance when you need it most</p>
+                <div class="hero-buttons">
+                    <a href="#sos" class="btn btn-primary">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Send SOS
+                    </a>
+                    <a href="#about" class="btn btn-secondary">
+                        <i class="fas fa-info-circle"></i>
+                        Learn More
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="emergency-icon">
+                    <i class="fas fa-anchor"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOS Form Section -->
+    <section id="sos" class="sos-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Emergency SOS Report</h2>
+                <p>Fill out the form below to request immediate assistance</p>
+            </div>
+            
+            <div class="sos-form-container">
+                <form id="sosForm" class="sos-form">
+                    <!-- Personal Information -->
+                    <div class="form-section">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" id="name" name="name" required placeholder="Full Name *">
+                            </div>
+                            <div class="form-group">
+                                <input type="number" id="age" name="age" min="1" max="120" required placeholder="Age *">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="tel" id="phone" name="phone" required placeholder="Phone Number *">
+                            </div>
+                            <div class="form-group">
+                                <input type="email" id="email" name="email" placeholder="Email (Optional)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location Information -->
+                    <div class="form-section">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <textarea id="address" name="address" rows="3" required placeholder="Current Address with Landmarks *"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" id="city" name="city" required placeholder="City *">
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="pincode" name="pincode" required placeholder="Pincode *">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Emergency Details -->
+                    <div class="form-section">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="number" id="peopleToRescue" name="peopleToRescue" min="1" required placeholder="Number of People Needing Rescue *">
+                            </div>
+                            <div class="form-group">
+                                <input type="number" id="peopleInjured" name="peopleInjured" min="0" required placeholder="Number of People Injured *">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <select id="foodAvailability" name="foodAvailability" required>
+                                    <option value="">Food Availability *</option>
+                                    <option value="sufficient">Sufficient (3+ days)</option>
+                                    <option value="limited">Limited (1-2 days)</option>
+                                    <option value="critical">Critical (Less than 1 day)</option>
+                                    <option value="none">No food available</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <select id="waterAvailability" name="waterAvailability" required>
+                                    <option value="">Water Availability *</option>
+                                    <option value="sufficient">Sufficient</option>
+                                    <option value="limited">Limited</option>
+                                    <option value="critical">Critical</option>
+                                    <option value="none">No water available</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Special Conditions -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-heart"></i> Special Conditions</h3>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="pregnant" name="pregnant">
+                                <label for="pregnant">Pregnant person(s) present</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="elderly" name="elderly">
+                                <label for="elderly">Elderly person(s) present (65+ years)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="children" name="children">
+                                <label for="children">Children present (under 12 years)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="disabled" name="disabled">
+                                <label for="disabled">Person(s) with disabilities present</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="medical" name="medical">
+                                <label for="medical">Person(s) requiring medical attention</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Emergency Type -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-water"></i> Type of Water Emergency</h3>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" id="flood" name="emergencyType" value="flood" required>
+                                <label for="flood">Flood</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="tsunami" name="emergencyType" value="tsunami" required>
+                                <label for="tsunami">Tsunami</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="storm" name="emergencyType" value="storm" required>
+                                <label for="storm">Storm/Cyclone</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="coastal-erosion" name="emergencyType" value="coastal-erosion" required>
+                                <label for="coastal-erosion">Coastal Erosion</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="dam-breach" name="emergencyType" value="dam-breach" required>
+                                <label for="dam-breach">Dam Breach</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="water-level-rising" name="emergencyType" value="water-level-rising" required>
+                                <label for="water-level-rising">Water Level Rising</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div class="form-section">
+                        <div class="form-group">
+                            <textarea id="additionalInfo" name="additionalInfo" rows="4" placeholder="Additional information that might help water rescue teams (optional)..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-sos">
+                            <i class="fas fa-paper-plane"></i>
+                            Send SOS Request
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                            <i class="fas fa-undo"></i>
+                            Clear Form
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>About Trident</h2>
+                <p>Your trusted emergency response system</p>
+            </div>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>Mission</h3>
+                    <p>Trident is designed to provide rapid emergency response and disaster assistance. Our system connects people in distress with rescue teams and emergency services to ensure timely help during critical situations.</p>
+                    
+                    <h3>Features</h3>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Quick SOS reporting system</li>
+                        <li><i class="fas fa-check"></i> Real-time emergency tracking</li>
+                        <li><i class="fas fa-check"></i> Priority-based rescue coordination</li>
+                        <li><i class="fas fa-check"></i> Special needs identification</li>
+                        <li><i class="fas fa-check"></i> Resource availability tracking</li>
+                    </ul>
+                </div>
+                <div class="about-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Emergency Support</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">< 5min</div>
+                        <div class="stat-label">Response Time</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">1000+</div>
+                        <div class="stat-label">Lives Saved</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Emergency Contacts</h2>
+                <p>Direct emergency numbers for immediate assistance</p>
+            </div>
+            <div class="contact-grid">
+                <div class="contact-card">
+                    <i class="fas fa-phone"></i>
+                    <h3>Emergency Services</h3>
+                    <p>100</p>
+                </div>
+                <div class="contact-card">
+                    <i class="fas fa-fire"></i>
+                    <h3>Fire Department</h3>
+                    <p>101</p>
+                </div>
+                <div class="contact-card">
+                    <i class="fas fa-ambulance"></i>
+                    <h3>Medical Emergency</h3>
+                    <p>108</p>
+                </div>
+                <div class="contact-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Police</h3>
+                    <p>100</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>TRIDENT</h3>
+                </div>
+                <p>&copy; 2024 Trident Emergency Response System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-check-circle"></i>
+                <h3>SOS Request Sent Successfully!</h3>
+            </div>
+            <div class="modal-body">
+                <p>Your emergency request has been received and is being processed. Rescue teams will be dispatched shortly.</p>
+                <div class="modal-info">
+                    <p><strong>Reference ID:</strong> <span id="referenceId"></span></p>
+                    <p><strong>Estimated Response Time:</strong> 5-15 minutes</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeModal()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    
+
+    </div>
+
+    <!-- ===== TAB PANE: DASHBOARD ===== -->
+    <div id="pane-dashboard" style="display: none;">
+
+    <div class="dashboard">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="dashboard-title">
+                <div class="title-section">
+                    <h1>
+                        <i class="fas fa-shield-alt"></i>
+                        Emergency Operations Center
+                    </h1>
+                </div>
+                <div class="nav-section">
+                    <div class="system-status">
+                        <div class="status-indicator online">
+                            <i class="fas fa-circle"></i>
+                            System Online
+                        </div>
+                        <div class="status-indicator warning" id="alertStatus" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Emergency Alert
+                        </div>
+                    </div>
+                    <div class="page-nav"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="dashboard-stats">
+            <div class="stat-card danger">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="stat-number" id="pendingRequests">0</div>
+                <div class="stat-label">Pending Requests</div>
+            </div>
+            
+            <div class="stat-card warning">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                </div>
+                <div class="stat-number" id="activeTeams">0</div>
+                <div class="stat-label">Active Teams</div>
+            </div>
+            
+            <div class="stat-card primary">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                </div>
+                <div class="stat-number" id="deployedROVs">1</div>
+                <div class="stat-label">Deployed ROVs</div>
+            </div>
+            
+            <div class="stat-card success">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                </div>
+                <div class="stat-number" id="connectedWearables">12</div>
+                <div class="stat-label">Connected Wearables</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <div class="main-panel">
+                <div class="panel-header">
+                    <h3>
+                        <i class="fas fa-tasks"></i>
+                        SOS Request Management
+                    </h3>
+                    <button class="refresh-btn" onclick="refreshRequests()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                
+                <div class="request-controls">
+                    <div class="filter-group">
+                        <select class="filter-select" id="statusFilter" onchange="filterRequests()">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="assigned">Assigned</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                        
+                        <select class="filter-select" id="priorityFilter" onchange="filterRequests()">
+                            <option value="">All Priorities</option>
+                            <option value="5">Critical (5)</option>
+                            <option value="4">High (4)</option>
+                            <option value="3">Medium (3)</option>
+                            <option value="2">Low (2)</option>
+                            <option value="1">Minimal (1)</option>
+                        </select>
+                    </div>
+                    
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search by name, city, or reference..." onkeyup="filterRequests()">
+                </div>
+
+                <div style="max-height: 600px; overflow-y: auto;">
+                    <table class="requests-table">
+                        <thead>
+                            <tr>
+                                <th>Reference ID</th>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Emergency Type</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Team</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requestsTableBody">
+                            <!-- Dynamic content will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="side-panel">
+                <!-- ROV Status -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>
+                            <i class="fas fa-robot"></i>
+                            ROV Status
+                        </h3>
+                        <button class="refresh-btn" onclick="refreshROVStatus()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="device-list" id="rovList">
+                        <!-- ROV devices will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Wearable Devices -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>
+                            <i class="fas fa-heartbeat"></i>
+                            Wearable Devices
+                        </h3>
+                        <button class="refresh-btn" onclick="refreshWearableStatus()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="device-list" id="wearableList">
+                        <!-- Wearable devices will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Request Details Modal -->
+    <div id="requestModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Request Details</h3>
+                <button class="close-btn" onclick="closeModal('requestModal')">&times;</button>
+            </div>
+            <div id="requestDetails">
+                <!-- Request details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign Team Modal -->
+    <div id="assignModal" class="modal">
+        <div class="modal-content status-modal-centered">
+            <div class="modal-header">
+                <i class="fas fa-user-friends"></i>
+                <h3 class="modal-title">Assign Response Team</h3>
+                <button class="close-btn" onclick="closeModal('assignModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="assignTeam(event)">
+                    <input type="hidden" id="assignRequestId">
+                    <div class="form-group">
+                        <h4 class="form-heading">Select Team:</h4>
+                        <select id="teamSelect" required>
+                            <option value="">Choose available response team...</option>
+                            <!-- Teams will be loaded here -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <h4 class="form-heading">Assignment Notes:</h4>
+                        <textarea id="assignmentNotes" rows="4" placeholder="📝 Provide details about this team assignment...
+
+Examples:
+• Team dispatched for water rescue operation
+• ROV deployment authorized for emergency
+• Supply team coordinating with local authorities
+• Backup team on standby"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-user-plus"></i> Assign Team
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="closeModal('assignModal')">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Status Modal -->
+    <div id="statusModal" class="modal">
+        <div class="modal-content status-modal-centered">
+            <div class="modal-header">
+                <i class="fas fa-clipboard-check"></i>
+                <h3 class="modal-title">Update Request Status</h3>
+                <button class="close-btn" onclick="closeModal('statusModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="updateStatus(event)">
+                    <input type="hidden" id="statusRequestId">
+                    <div class="form-group">
+                        <h4 class="form-heading">New Status:</h4>
+                        <select id="newStatus" required>
+                            <option value="">Select new status...</option>
+                            <option value="pending">🔄 Pending</option>
+                            <option value="assigned">👥 Assigned</option>
+                            <option value="in-progress">🚨 In Progress</option>
+                            <option value="resolved">✅ Resolved</option>
+                            <option value="cancelled">❌ Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <h4 class="form-heading">Status Notes:</h4>
+                        <textarea id="statusNotes" rows="4" placeholder="💬 Provide details about this status update...
+
+Examples:
+• Team dispatched to location
+• Rescue operation completed
+• Equipment deployed successfully
+• Request cancelled due to false alarm"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Update Status
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="closeModal('statusModal')">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    
+
+    </div>
+
+    <!-- ===== TAB PANE: ANALYTICS ===== -->
+    <div id="pane-analytics" style="display: none;">
+
+    <div class="analytics-dashboard">
+        <!-- Analytics Header -->
+        <div class="analytics-header">
+            <div class="analytics-title">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <i class="fas fa-chart-line" style="font-size: 2.5rem; color: #667eea;"></i>
+                    <h1>Analytics Dashboard</h1>
+                </div>
+                </div>
+            <p style="color: #64748b; font-size: 1.1rem;">Detailed insights and performance metrics</p>
+            
+            <div class="analytics-nav">
+                <button class="tab-btn active" onclick="showTab('overview')">
+                    <i class="fas fa-tachometer-alt"></i> Overview
+                </button>
+                <button class="tab-btn" onclick="showTab('trends')">
+                    <i class="fas fa-chart-line"></i> Trends
+                </button>
+                <button class="tab-btn" onclick="showTab('geographic')">
+                    <i class="fas fa-map"></i> Geographic
+                </button>
+                <button class="tab-btn" onclick="showTab('performance')">
+                    <i class="fas fa-clock"></i> Performance
+                </button>
+                <button class="tab-btn" onclick="showTab('ai-predictions')">
+                    <i class="fas fa-brain"></i> AI Predictions
+                </button>
+            </div>
+            
+            <button class="refresh-btn" onclick="refreshAnalytics()" style="margin-top: 1rem;">
+                <i class="fas fa-sync-alt"></i>
+                Refresh Data
+            </button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content">
+            <!-- Key Metrics -->
+            <div class="metrics-grid" id="metricsContainer">
+                <div class="metric-card primary">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                    <div class="metric-number" id="totalRequests">-</div>
+                    <div class="metric-label">Total Requests</div>
+                    <div class="metric-change positive" id="totalRequestsChange">+0%</div>
+                </div>
+                <div class="metric-card warning">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="metric-number" id="analyticsPendingRequests">-</div>
+                    <div class="metric-label">Pending Requests</div>
+                    <div class="metric-change" id="pendingRequestsChange">0%</div>
+                </div>
+                <div class="metric-card success">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="metric-number" id="resolvedRequests">-</div>
+                    <div class="metric-label">Resolved Requests</div>
+                    <div class="metric-change positive" id="resolvedRequestsChange">+0%</div>
+                </div>
+                <div class="metric-card danger">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="metric-number" id="availableTeams">-</div>
+                    <div class="metric-label">Available Teams</div>
+                    <div class="metric-change" id="availableTeamsChange">0%</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="analytics-content">
+                <div class="analytics-card">
+                    <h3><i class="fas fa-chart-pie"></i> Emergency Types Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="emergencyTypesChart"></canvas>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3><i class="fas fa-chart-bar"></i> Status Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Priority Distribution -->
+            <div class="analytics-card full-width">
+                <h3><i class="fas fa-sort-amount-up"></i> Priority Distribution</h3>
+                <div class="chart-container" style="height: 400px;">
+                    <canvas id="priorityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trends Tab -->
+        <div id="trends-tab" class="tab-content" style="display: none;">
+            <div class="analytics-content">
+                <div class="analytics-card full-width">
+                    <h3><i class="fas fa-chart-line"></i> Hourly Request Trends (Last 24 Hours)</h3>
+                    <div class="chart-container" style="height: 400px;">
+                        <canvas id="hourlyTrendsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="analytics-content">
+                <div class="analytics-card full-width">
+                    <h3><i class="fas fa-calendar-alt"></i> Daily Request Trends (Last 7 Days)</h3>
+                    <div class="chart-container" style="height: 400px;">
+                        <canvas id="dailyTrendsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Geographic Tab -->
+        <div id="geographic-tab" class="tab-content" style="display: none;">
+            <div class="analytics-content">
+                <div class="analytics-card">
+                    <h3><i class="fas fa-map-marker-alt"></i> City-wise Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="cityChart"></canvas>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3><i class="fas fa-table"></i> Top Cities</h3>
+                    <div id="cityTableContainer">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i> Loading city data...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Tab -->
+        <div id="performance-tab" class="tab-content" style="display: none;">
+            <div class="analytics-content">
+                <div class="analytics-card">
+                    <h3><i class="fas fa-stopwatch"></i> Response Time Metrics</h3>
+                    <div class="metric-number" id="avgResponseTime">-</div>
+                    <div class="metric-label">Average Response Time (minutes)</div>
+                </div>
+                <div class="analytics-card">
+                    <h3><i class="fas fa-tachometer-alt"></i> System Performance</h3>
+                    <div id="performanceMetrics">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i> Loading performance data...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Predictions Tab -->
+        <div id="ai-predictions-tab" class="tab-content" style="display: none;">
+            <div class="analytics-content">
+                <div class="analytics-card full-width">
+                    <h3><i class="fas fa-thermometer-half"></i> Temperature Prediction (AI Model)</h3>
+                    <div class="chart-container" style="height: 400px;">
+                        <canvas id="temperaturePredictionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="analytics-content">
+                <div class="analytics-card full-width">
+                    <h3><i class="fas fa-tint"></i> Waterflow Prediction (AI Model)</h3>
+                    <div class="chart-container" style="height: 400px;">
+                        <canvas id="waterflowPredictionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="analytics-content">
+                <div class="analytics-card">
+                    <h3><i class="fas fa-route"></i> Shortest Path Analysis</h3>
+                    <div id="shortestPathsContainer">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i> Loading shortest paths...
+                        </div>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3><i class="fas fa-cloud-sun"></i> Recent Weather Data</h3>
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="weatherDataChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/platform.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main_app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script>
+
+        // Global variables
+        let charts = {};
+        let currentTab = 'overview';
+
+        // Initialize analytics dashboard
+        // NOTE: initializeAnalytics() is called by platform.js when the analytics tab is selected.
+
+        // Initialize analytics
+        async function initializeAnalytics() {
+            try {
+                await loadAnalyticsData();
+                await loadOverviewData();
+                await loadAIPredictions();
+                await loadChartData(); // Load emergency types and status charts
+            } catch (error) {
+                console.error('Error initializing analytics:', error);
+                showError('Failed to initialize analytics dashboard.');
+            }
+        }
+
+        // Load analytics data
+        async function loadAnalyticsData() {
+            try {
+                const response = await fetch('/api/analytics');
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.analyticsData = data.data;
+                    updateCharts();
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                console.error('Error loading analytics data:', error);
+            }
+        }
+
+        // Load overview data
+        async function loadOverviewData() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.statsData = data.data;
+                    updateMetrics();
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                console.error('Error loading overview data:', error);
+            }
+        }
+
+        // Update metrics
+        function updateMetrics() {
+            const stats = window.statsData;
+            if (!stats) return;
+
+            document.getElementById('totalRequests').textContent = stats.totalSOSRequests;
+            document.getElementById('analyticsPendingRequests').textContent = stats.pendingRequests;
+            document.getElementById('resolvedRequests').textContent = stats.resolvedRequests;
+            document.getElementById('availableTeams').textContent = stats.availableTeams;
+        }
+
+        // Update charts
+        function updateCharts() {
+            const data = window.analyticsData;
+            if (!data) return;
+
+            // Emergency Types Chart
+            createEmergencyTypesChart(data.emergencyTypeDistribution || {});
+            
+            // Status Chart
+            createStatusChart(data.statusDistribution || {});
+            
+            // Priority Chart
+            createPriorityChart(data.priorityDistribution || {});
+            
+            // Hourly Trends Chart
+            createHourlyTrendsChart(data.hourlyDistribution || {});
+            
+            // Daily Trends Chart
+            createDailyTrendsChart(data.dailyDistribution || {});
+            
+            // City Chart
+            createCityChart(data.cityDistribution || {});
+            
+            // Update city table
+            updateCityTable(data.cityDistribution || {});
+            
+            // Update performance metrics
+            updatePerformanceMetrics(data);
+        }
+
+        // Create emergency types chart
+        function createEmergencyTypesChart(data) {
+            const ctx = document.getElementById('emergencyTypesChart').getContext('2d');
+            
+            if (charts.emergencyTypes) {
+                charts.emergencyTypes.destroy();
+            }
+
+            charts.emergencyTypes = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#ef4444',
+                            '#f59e0b',
+                            '#10b981',
+                            '#8b5cf6'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create status chart
+        async function createStatusChart(data) {
+            console.log('🔄 createStatusChart called');
+            
+            try {
+                // Fetch real data from API instead of using passed data
+                const response = await fetch('/api/analytics/status-distribution');
+                const apiData = await response.json();
+                console.log('📊 Status API response:', apiData);
+                
+                if (!apiData.success) {
+                    console.error('❌ API returned error:', apiData);
+                    return;
+                }
+                
+                const ctx = document.getElementById('statusChart');
+                if (!ctx) {
+                    console.error('❌ Status chart canvas not found');
+                    return;
+                }
+                
+                console.log('✅ Canvas found, creating chart...');
+                
+                if (charts.status) {
+                    console.log('🗑️ Destroying existing status chart');
+                    charts.status.destroy();
+                }
+
+                // Status colors matching our theme
+                const statusColors = {
+                    'pending': '#F59E0B',      // Orange
+                    'in-progress': '#3B82F6',  // Blue  
+                    'resolved': '#10B981',     // Green
+                    'cancelled': '#EF4444'     // Red
+                };
+
+                const chartData = apiData.data;
+                const labels = chartData.map(item => item.status.charAt(0).toUpperCase() + item.status.slice(1).replace('-', ' '));
+                const values = chartData.map(item => item.count);
+                const colors = chartData.map(item => statusColors[item.status.toLowerCase()] || '#6B7280');
+
+                charts.status = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Number of Requests',
+                            data: values,
+                            backgroundColor: colors,
+                            borderColor: colors.map(color => color),
+                            borderWidth: 1,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Request Status Distribution',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                console.log('✅ Status chart created successfully!');
+                
+            } catch (error) {
+                console.error('💥 Error creating status chart:', error);
+            }
+        }
+
+        // Create priority chart
+        function createPriorityChart(data) {
+            const ctx = document.getElementById('priorityChart').getContext('2d');
+            
+            if (charts.priority) {
+                charts.priority.destroy();
+            }
+
+            charts.priority = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data).map(p => `Priority ${p}`),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: [
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444'
+                        ],
+                        borderWidth: 0,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create hourly trends chart
+        function createHourlyTrendsChart(data) {
+            const ctx = document.getElementById('hourlyTrendsChart').getContext('2d');
+            
+            if (charts.hourlyTrends) {
+                charts.hourlyTrends.destroy();
+            }
+
+            // Fill missing hours with 0
+            const hours = Array.from({length: 24}, (_, i) => i.toString().padStart(2, '0'));
+            const values = hours.map(hour => data[hour] || 0);
+
+            charts.hourlyTrends = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: hours.map(h => h + ':00'),
+                    datasets: [{
+                        data: values,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create daily trends chart
+        function createDailyTrendsChart(data) {
+            const ctx = document.getElementById('dailyTrendsChart').getContext('2d');
+            
+            if (charts.dailyTrends) {
+                charts.dailyTrends.destroy();
+            }
+
+            charts.dailyTrends = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create city chart
+        function createCityChart(data) {
+            const ctx = document.getElementById('cityChart').getContext('2d');
+            
+            if (charts.city) {
+                charts.city.destroy();
+            }
+
+            const sortedData = Object.entries(data)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 10);
+
+            charts.city = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: {
+                    labels: sortedData.map(([city]) => city),
+                    datasets: [{
+                        data: sortedData.map(([,count]) => count),
+                        backgroundColor: '#3b82f6',
+                        borderWidth: 0,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update city table
+        function updateCityTable(data) {
+            const container = document.getElementById('cityTableContainer');
+            
+            if (Object.keys(data).length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #64748b;">
+                        <i class="fas fa-inbox"></i> No city data available
+                    </div>
+                `;
+                return;
+            }
+
+            const sortedData = Object.entries(data)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 10);
+
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>City</th>
+                            <th>Requests</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedData.map(([city, count]) => {
+                            const total = Object.values(data).reduce((sum, val) => sum + val, 0);
+                            const percentage = ((count / total) * 100).toFixed(1);
+                            return `
+                                <tr>
+                                    <td><strong>${city}</strong></td>
+                                    <td>${count}</td>
+                                    <td>${percentage}%</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Update performance metrics
+        function updatePerformanceMetrics(data) {
+            document.getElementById('avgResponseTime').textContent = data.averageResponseTime || '0';
+            
+            const performanceContainer = document.getElementById('performanceMetrics');
+            performanceContainer.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">${data.averageResponseTime || 0}</div>
+                        <div style="color: #64748b; font-size: 0.875rem;">Avg Response Time (min)</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">${Object.keys(data.hourlyDistribution || {}).length}</div>
+                        <div style="color: #64748b; font-size: 0.875rem;">Active Hours Today</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load AI predictions
+        async function loadAIPredictions() {
+            try {
+                await Promise.all([
+                    loadTemperaturePrediction(),
+                    loadWaterflowPrediction(),
+                    loadShortestPaths(),
+                    loadWeatherData()
+                ]);
+            } catch (error) {
+                console.error('Error loading AI predictions:', error);
+            }
+        }
+
+        // Load temperature prediction
+        async function loadTemperaturePrediction() {
+            try {
+                const response = await fetch('/api/ai/temperature-prediction?hours=24');
+                const data = await response.json();
+                
+                if (data.success) {
+                    createTemperaturePredictionChart(data.data);
+                } else {
+                    console.error('Temperature prediction failed:', data.message);
+                }
+            } catch (error) {
+                console.error('Error loading temperature prediction:', error);
+            }
+        }
+
+        // Load waterflow prediction
+        async function loadWaterflowPrediction() {
+            try {
+                const response = await fetch('/api/ai/waterflow-prediction');
+                const data = await response.json();
+                
+                if (data.success) {
+                    createWaterflowPredictionChart(data.data);
+                } else {
+                    console.error('Waterflow prediction failed:', data.message);
+                }
+            } catch (error) {
+                console.error('Error loading waterflow prediction:', error);
+            }
+        }
+
+        // Load shortest paths
+        async function loadShortestPaths() {
+            try {
+                const response = await fetch('/api/ai/shortest-paths');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayShortestPaths(data.data);
+                } else {
+                    console.error('Shortest paths failed:', data.message);
+                }
+            } catch (error) {
+                console.error('Error loading shortest paths:', error);
+            }
+        }
+
+        // Load weather data
+        async function loadWeatherData() {
+            try {
+                const response = await fetch('/api/ai/weather-data');
+                const data = await response.json();
+                
+                if (data.success) {
+                    createWeatherDataChart(data.data);
+                } else {
+                    console.error('Weather data failed:', data.message);
+                }
+            } catch (error) {
+                console.error('Error loading weather data:', error);
+            }
+        }
+
+        // Show tab
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').style.display = 'block';
+            
+            // Add active class to selected tab button
+            event.target.classList.add('active');
+            
+            currentTab = tabName;
+        }
+
+        // Create temperature prediction chart
+        function createTemperaturePredictionChart(data) {
+            const ctx = document.getElementById('temperaturePredictionChart').getContext('2d');
+            
+            if (charts.temperaturePrediction) {
+                charts.temperaturePrediction.destroy();
+            }
+
+            const labels = data.timestamps.map(ts => new Date(ts).toLocaleTimeString());
+            
+            charts.temperaturePrediction = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Predicted Temperature (°C)',
+                        data: data.temperatures,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'AI Temperature Prediction (Next 24 Hours)',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Temperature (°C)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create waterflow prediction chart
+        function createWaterflowPredictionChart(data) {
+            const ctx = document.getElementById('waterflowPredictionChart').getContext('2d');
+            
+            if (charts.waterflowPrediction) {
+                charts.waterflowPrediction.destroy();
+            }
+
+            const labels = data.timestamps.map(ts => new Date(ts).toLocaleTimeString());
+            
+            charts.waterflowPrediction = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Predicted Waterflow (L/min)',
+                        data: data.waterflow,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'AI Waterflow Prediction (Next 24 Hours)',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Waterflow (L/min)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Display shortest paths
+        function displayShortestPaths(data) {
+            const container = document.getElementById('shortestPathsContainer');
+            
+            if (!data.paths || data.paths.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #64748b;">
+                        <i class="fas fa-route"></i> No emergency nodes available for path analysis
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div style="margin-bottom: 1rem;">
+                    <h4 style="color: #1e293b; margin-bottom: 0.5rem;">Emergency Nodes (${data.nodes.length})</h4>
+                    <div style="font-size: 0.875rem; color: #64748b;">
+                        Showing shortest paths between emergency locations
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Distance</th>
+                            <th>Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.paths.slice(0, 10).map(path => `
+                            <tr>
+                                <td>
+                                    <strong>${path.from_city}</strong><br>
+                                    <small style="color: #64748b;">${path.from}</small>
+                                </td>
+                                <td>
+                                    <strong>${path.to_city}</strong><br>
+                                    <small style="color: #64748b;">${path.to}</small>
+                                </td>
+                                <td>
+                                    <span style="color: #3b82f6; font-weight: 600;">${path.distance} km</span>
+                                </td>
+                                <td>
+                                    <span class="priority-badge priority-${path.from_priority >= 4 ? 'high' : path.from_priority >= 2 ? 'medium' : 'low'}">
+                                        ${path.from_priority}
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Create weather data chart
+        function createWeatherDataChart(data) {
+            const ctx = document.getElementById('weatherDataChart').getContext('2d');
+            
+            if (charts.weatherData) {
+                charts.weatherData.destroy();
+            }
+
+            const labels = data.timestamps.map(ts => new Date(ts).toLocaleTimeString());
+            
+            charts.weatherData = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Temperature (°C)',
+                            data: data.temperature,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Humidity (%)',
+                            data: data.humidity,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: 'Precipitation (mm)',
+                            data: data.precipitation,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            yAxisID: 'y2'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Temperature (°C)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Humidity (%)'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        },
+                        y2: {
+                            type: 'linear',
+                            display: false,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Precipitation (mm)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Refresh analytics
+        async function refreshAnalytics() {
+            const refreshBtn = document.querySelector('.refresh-btn');
+            const originalContent = refreshBtn.innerHTML;
+            
+            refreshBtn.innerHTML = '<div class="loading"></div> Refreshing...';
+            refreshBtn.disabled = true;
+            
+            try {
+                await Promise.all([
+                    loadAnalyticsData(),
+                    loadOverviewData(),
+                    loadAIPredictions()
+                ]);
+                showSuccess('Analytics refreshed successfully!');
+            } catch (error) {
+                showError('Failed to refresh analytics');
+            } finally {
+                refreshBtn.innerHTML = originalContent;
+                refreshBtn.disabled = false;
+            }
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #10b981;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                z-index: 3000;
+                animation: slideInRight 0.3s ease;
+            `;
+            messageDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+        // Show error message
+        function showError(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #ef4444;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                z-index: 3000;
+                animation: slideInRight 0.3s ease;
+            `;
+            messageDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        // Load chart data for Emergency Types and Status Distribution
+        async function loadChartData() {
+            try {
+                console.log('Loading chart data...');
+                
+                // Load Emergency Types Distribution
+                const emergencyResponse = await fetch('/api/analytics/emergency-types');
+                const emergencyData = await emergencyResponse.json();
+                console.log('Emergency types data:', emergencyData);
+                
+                if (emergencyData.success) {
+                    updateEmergencyTypesChart(emergencyData.data);
+                } else {
+                    console.error('Failed to load emergency types data');
+                }
+
+                // Load Status Distribution  
+                const statusResponse = await fetch('/api/analytics/status-distribution');
+                const statusData = await statusResponse.json();
+                console.log('Status distribution data:', statusData);
+                
+                if (statusData.success) {
+                    updateStatusDistributionChart(statusData.data);
+                } else {
+                    console.error('Failed to load status distribution data');
+                }
+            } catch (error) {
+                console.error('Error loading chart data:', error);
+            }
+        }
+
+        // Update Emergency Types Chart
+        function updateEmergencyTypesChart(data) {
+            const ctx = document.getElementById('emergencyTypesChart');
+            if (!ctx) {
+                console.error('Emergency types chart canvas not found');
+                return;
+            }
+
+            // Destroy existing chart if it exists
+            if (charts.emergencyTypes) {
+                charts.emergencyTypes.destroy();
+            }
+
+            // Water emergency colors
+            const colors = [
+                '#3B82F6', // Blue - Flood
+                '#EF4444', // Red - Tsunami  
+                '#F59E0B', // Orange - Storm
+                '#10B981', // Green - Coastal Erosion
+                '#8B5CF6', // Purple - Dam Breach
+                '#06B6D4'  // Cyan - Water Level Rising
+            ];
+
+            charts.emergencyTypes = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(item => item.type.charAt(0).toUpperCase() + item.type.slice(1).replace('-', ' ')),
+                    datasets: [{
+                        data: data.map(item => item.count),
+                        backgroundColor: colors.slice(0, data.length),
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Water Emergency Types Distribution',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update Status Distribution Chart
+        function updateStatusDistributionChart(data) {
+            console.log('updateStatusDistributionChart called with data:', data);
+            
+            const ctx = document.getElementById('statusChart');
+            if (!ctx) {
+                console.error('Status chart canvas not found');
+                return;
+            }
+            
+            console.log('Canvas element found:', ctx);
+
+            // Destroy existing chart if it exists
+            if (charts.statusChart) {
+                console.log('Destroying existing status chart');
+                charts.statusChart.destroy();
+            }
+
+            // Status colors
+            const statusColors = {
+                'pending': '#F59E0B',      // Orange
+                'in-progress': '#3B82F6',  // Blue  
+                'resolved': '#10B981',     // Green
+                'cancelled': '#EF4444'     // Red
+            };
+
+            charts.statusChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(item => item.status.charAt(0).toUpperCase() + item.status.slice(1).replace('-', ' ')),
+                    datasets: [{
+                        label: 'Number of Requests',
+                        data: data.map(item => item.count),
+                        backgroundColor: data.map(item => statusColors[item.status.toLowerCase()] || '#6B7280'),
+                        borderColor: data.map(item => statusColors[item.status.toLowerCase()] || '#374151'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Request Status Distribution',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Add CSS for animation
+        const animStyle = document.createElement('style');
+        animStyle.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(animStyle);
+    
+    </script>
+</body>
+</html>

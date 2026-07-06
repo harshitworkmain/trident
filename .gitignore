@@ -143,6 +143,7 @@ logs/
 *.log
 data/databases/*.db-journal
 config/api_keys.env
+*.db
 
 # ML model files (too large for git)
 *.pth

@@ -13,7 +13,7 @@ Before running the system, ensure you have:
 
 ### Step 1: Navigate to Project Directory
 ```bash
-cd "c:\loopster\Akshay\Chennai_Weather_AI_System"
+cd trident
 ```
 
 ### Step 2: Create Virtual Environment (Recommended)
@@ -61,10 +61,12 @@ gunicorn -w 4 -b 0.0.0.0:5000 app:app
 
 Once the server is running, open your web browser and navigate to:
 
-### Main Pages:
-- **Home/SOS Form**: http://localhost:5000
-- **Dashboard**: http://localhost:5000/dashboard
-- **Analytics**: http://localhost:5000/analytics
+### Unified Command Platform:
+- **Home/SOS Tab**: http://localhost:5000 (or `/#sos`)
+- **Dashboard Tab**: http://localhost:5000/dashboard (or `/#dashboard`)
+- **Analytics Tab**: http://localhost:5000/analytics (or `/#analytics`)
+
+All pages are consolidated into a single unified platform. Any of the URLs above will load the platform and automatically select the corresponding tab.
 
 ### API Endpoints:
 - **Submit SOS**: POST http://localhost:5000/api/sos

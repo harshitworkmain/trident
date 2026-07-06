@@ -48,16 +48,18 @@ document.addEventListener('DOMContentLoaded', function() {
 // Initialize modern UI features
 function initializeModernUI() {
     // Add scroll effect to header
-    const header = document.querySelector('.header');
+    const header = document.querySelector('.header') || document.querySelector('.platform-header');
     let lastScrollY = window.scrollY;
     
     window.addEventListener('scroll', () => {
         const currentScrollY = window.scrollY;
         
-        if (currentScrollY > 100) {
-            header.classList.add('scrolled');
-        } else {
-            header.classList.remove('scrolled');
+        if (header) {
+            if (currentScrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
         }
         
         lastScrollY = currentScrollY;
@@ -68,7 +70,9 @@ function initializeModernUI() {
     window.addEventListener('scroll', () => {
         const scrolled = window.pageYOffset;
         const rate = scrolled * -0.5;
-        hero.style.transform = `translateY(${rate}px)`;
+        if (hero) {
+            hero.style.transform = `translateY(${rate}px)`;
+        }
     });
     
     // Add intersection observer for animations

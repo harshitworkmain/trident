@@ -32,11 +32,13 @@ python app.py
 
 Once started, open your web browser and go to:
 
-| **Page** | **URL** | **Description** |
-|----------|---------|-----------------|
-| 🏠 **Home** | http://localhost:5000 | Emergency SOS form |
-| 📊 **Dashboard** | http://localhost:5000/dashboard | Live emergency monitoring |
-| 📈 **Analytics** | http://localhost:5000/analytics | Detailed analytics & trends |
+| **Page View / Tab** | **URL** | **Description** |
+|---------------------|---------|-----------------|
+| 🏠 **Home / SOS** | http://localhost:5000 (or `/#sos`) | Unified SOS form |
+| 📊 **Dashboard** | http://localhost:5000/dashboard (or `/#dashboard`) | Live emergency monitoring tab |
+| 📈 **Analytics** | http://localhost:5000/analytics (or `/#analytics`) | Detailed analytics & AI predictions tab |
+
+All interface components are hosted on a single unified webpage; navigating to any URL dynamically toggles the active tab.
 
 ## 🎮 **What You Can Do**
 
@@ -107,7 +109,7 @@ Once started, open your web browser and go to:
 ## 🛠️ **Configuration Options**
 
 ### **Change Port**
-Edit `app.py` (line 662):
+Edit `app.py`:
 ```python
 app.run(debug=True, host='0.0.0.0', port=8080)  # Change 5000 to your port
 ```
@@ -118,7 +120,7 @@ The app runs on `0.0.0.0` by default, so other devices on your network can acces
 - **Example**: http://192.168.1.100:5000
 
 ### **Production Mode**
-Edit `app.py` (line 662):
+Edit `app.py`:
 ```python
 app.run(debug=False, host='0.0.0.0', port=5000)  # Set debug=False
 ```

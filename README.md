@@ -114,12 +114,11 @@ The underwater ROV undergoes rigorous fluid dynamics analysis to ensure stabilit
 
 5. **Start the backend server**
    ```bash
-   python src/backend/main.py
+   python app.py
    ```
 
-6. **Access the dashboard**
-   - Open browser to `http://localhost:5000`
-   - Navigate to `/admin` for dashboard access
+6. **Access the platform**
+   - Open browser to `http://localhost:5000` (contains the unified SOS, Dashboard, and Analytics in one tabbed view)
 
 ## 📁 Project Structure
 
@@ -136,7 +135,8 @@ trident/
 ├── docs/                   # Documentation
 ├── scripts/                # Utility scripts
 ├── assets/                 # Static resources (Images, Videos, CADs)
-└── config/                 # Configuration files
+├── config/                 # Configuration files
+└── app.py                  # Root application entrypoint
 ```
 
 ## 🔧 Development Setup
@@ -144,7 +144,7 @@ trident/
 ### Backend Development
 ```bash
 # Start development server
-python src/backend/main.py
+python app.py
 
 # Run tests
 python -m pytest src/backend/tests/
@@ -239,7 +239,7 @@ docker-compose up -d
 ./scripts/deployment/start_app.sh
 
 # Manual deployment
-gunicorn -w 4 -b 0.0.0.0:5000 src.backend.main:app
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
 ```
 
 ## 🧪 Testing

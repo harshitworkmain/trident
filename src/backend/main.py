@@ -18,7 +18,10 @@ from sklearn.preprocessing import MinMaxScaler
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__, static_folder='.', static_url_path='')
+app = Flask(__name__, 
+            template_folder='../frontend/templates', 
+            static_folder='../frontend/static', 
+            static_url_path='/static')
 CORS(app)
 
 # Database configuration
@@ -153,6 +156,8 @@ def init_database():
             capacity INTEGER,
             current_load INTEGER DEFAULT 0,
             is_available BOOLEAN DEFAULT TRUE,
+            deployment_mode TEXT DEFAULT 'MANUAL_DEPLOY',
+            team_description TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -175,18 +180,18 @@ def init_database():
     
     # Insert default response teams
     default_teams = [
-        ('Chennai Water Rescue Team 1', 'Water Rescue', '9876543210', 'waterrescue1@trident.in', 'Chennai', 10, 0, True),
-        ('Chennai Flood Response Team 2', 'Flood Response', '9876543211', 'floodresponse@trident.in', 'Chennai', 8, 0, True),
-        ('Chennai Coastal Rescue Team 3', 'Coastal Rescue', '9876543212', 'coastalrescue@trident.in', 'Chennai', 12, 0, True),
-        ('Mumbai Marine Rescue Team 1', 'Marine Rescue', '9876543213', 'marinerescue@trident.in', 'Mumbai', 10, 0, True),
-        ('Delhi River Rescue Team 1', 'River Rescue', '9876543214', 'riverrescue@trident.in', 'Delhi', 15, 0, True)
+        ('Chennai ROV Alpha Team', 'ROV Water Rescue', '9876543210', 'waterrescue1@trident.in', 'Chennai', 10, 0, True, 'AUTO_DEPLOY', 'Primary autonomous ROV rescue unit with auto-deployment capability'),
+        ('Chennai ROV Beta Team', 'ROV Water Rescue', '9876543211', 'floodresponse@trident.in', 'Chennai', 8, 0, True, 'MANUAL_DEPLOY', 'Secondary ROV team for manual deployment operations'),
+        ('Chennai Coastal Rescue Team', 'Coastal Rescue', '9876543212', 'coastalrescue@trident.in', 'Chennai', 12, 0, True, 'MANUAL_DEPLOY', 'Coastal zone rescue and monitoring operations'),
+        ('Water Emergency Supply Unit', 'Water Emergency Supply', '9876543213', 'supply@trident.in', 'Chennai', 10, 0, True, 'MANUAL_DEPLOY', 'Emergency water and supply distribution team'),
+        ('Delhi River Rescue Team', 'River Rescue', '9876543214', 'riverrescue@trident.in', 'Delhi', 15, 0, True, 'MANUAL_DEPLOY', 'River and inland waterway rescue operations')
     ]
     
     cursor.execute('SELECT COUNT(*) FROM response_teams')
     if cursor.fetchone()[0] == 0:
         cursor.executemany('''
-            INSERT INTO response_teams (team_name, team_type, contact_phone, contact_email, location, capacity, current_load, is_available)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO response_teams (team_name, team_type, contact_phone, contact_email, location, capacity, current_load, is_available, deployment_mode, team_description)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', default_teams)
     
     conn.commit()
@@ -199,7 +204,7 @@ def init_ai_model():
     
     try:
         # Load weather data
-        weather_data = pd.read_csv('data/chennai_weather.csv')
+        weather_data = pd.read_csv('data/raw/weather/chennai_historical.csv')
         weather_data['time'] = pd.to_datetime(weather_data['time'])
         weather_data = weather_data.sort_values('time')
         
@@ -214,7 +219,7 @@ def init_ai_model():
         weather_model = WeatherLSTM(input_size=1, hidden_size=50, num_layers=2, output_size=1)
         
         # Load trained model if available
-        model_path = 'trained_model/weather_lstm_model.pth'
+        model_path = 'data/models/weather_lstm.pth'
         if os.path.exists(model_path):
             try:
                 # Try to load the model with the expected structure
@@ -621,23 +626,18 @@ def notify_emergency_services(data: Dict, reference_id: str):
 
 @app.route('/')
 def index():
-    """Serve the main HTML page"""
-    return render_template('index.html')
-
-@app.route('/<path:filename>')
-def serve_static(filename):
-    """Serve static files"""
-    return app.send_static_file(filename)
+    """Serve the unified platform page"""
+    return render_template('platform.html')
 
 @app.route('/dashboard')
 def dashboard():
-    """Serve the dashboard page"""
-    return render_template('dashboard.html')
+    """Serve the unified platform page (dashboard tab)"""
+    return render_template('platform.html')
 
 @app.route('/analytics')
 def analytics():
-    """Serve the analytics page"""
-    return render_template('analytics.html')
+    """Serve the unified platform page (analytics tab)"""
+    return render_template('platform.html')
 
 @app.route('/api/sos', methods=['POST'])
 def submit_sos():
