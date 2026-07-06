@@ -2,6 +2,7 @@
 Flask>=2.3.0
 Flask-CORS>=4.0.0
 Flask-SQLAlchemy>=3.0.0
+gunicorn>=21.2.0
 
 # Core PyTorch with CUDA support (CUDA 12.1)
 torch>=2.5.0
