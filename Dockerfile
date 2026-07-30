@@ -12,8 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy and install python requirements
-COPY requirements.txt /code/requirements.txt
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+COPY requirements-prod.txt /code/requirements-prod.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements-prod.txt
 
 # Copy all application files
 COPY . .
@@ -21,8 +21,8 @@ COPY . .
 # Grant write permissions to the workspace directory so SQLite can create/write files
 RUN chmod -R 777 /code
 
-# Expose port 7860 (default port Hugging Face Spaces expects)
+# Expose port 7860 (Hugging Face default)
 EXPOSE 7860
 
-# Run Flask application using Gunicorn on port 7860
-CMD ["gunicorn", "-b", "0.0.0.0:7860", "app:app"]
+# Run Flask application using Gunicorn (binding to $PORT with a fallback to 7860)
+CMD ["sh", "-c", "gunicorn -b 0.0.0.0:${PORT:-7860} app:app"]

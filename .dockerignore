@@ -1,0 +1,42 @@
+# Ignore python virtual environments
+venv/
+.venv/
+env/
+ENV/
+*.bak
+*.backup
+
+# Ignore git directory
+.git/
+.gitignore
+.gitattributes
+
+# Ignore IDE settings
+.vscode/
+.idea/
+
+# Ignore compiled python files and caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.cache/
+
+# Ignore local databases and logs
+*.db
+*.db-journal
+*.log
+logs/
+
+# Ignore PlatformIO and embedded build outputs
+.pio/
+.pioenvs/
+.piolibdeps/
+build/
+dist/
+
+# Ignore local scratch or system files
+.DS_Store
+tmp/
+temp/
