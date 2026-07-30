@@ -4,13 +4,6 @@ FROM python:3.10-slim
 # Set working directory
 WORKDIR /code
 
-# Install system dependencies needed for OpenCV, PyTorch, and other compiled libraries
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy and install python requirements
 COPY requirements-prod.txt /code/requirements-prod.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements-prod.txt
