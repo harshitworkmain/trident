@@ -5,11 +5,13 @@
 # TRIDENT - Integrated Disaster Response & Rescue Ecosystem
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Flask](https://img.shields.io/badge/flask-2.0+-green.svg)](https://flask.palletsprojects.com/)
-[![PlatformIO](https://img.shields.io/badge/platformio-6.0+-red.svg)](https://platformio.org/)
+[![Render](https://img.shields.io/badge/Render-Live%20Demo-brightgreen.svg)](https://trident-command-center.onrender.com/)
 
 This is an integrated disaster rescue ecosystem that enables real-time situational awareness, predictive risk analysis, and priority classification. It combines a multi-sensor wearable (ESP32, MAX30102, GSR, MPU6050, NEO-6M GPS, buzzer) and an underwater ROV (Arduino Uno, 4x thrusters, LiPo) with an AI-powered Flask central orchestrator.
+
+🌐 **Live Web Application:** [https://trident-command-center.onrender.com/](https://trident-command-center.onrender.com/)
 
 ## 🎥 Demonstration
 
@@ -225,22 +227,21 @@ python3 main.py
 - Resource deployment optimization
 - Analytics and reporting
 
-## 🚀 Deployment
+### Production & Cloud Deployment
+- **Live Demo (Render):** [https://trident-command-center.onrender.com/](https://trident-command-center.onrender.com/)
 
-### Development Environment
-```bash
-# Start all services
-docker-compose up -d
-```
+#### Docker / Render Container Deployment
+1. Build and run using Docker:
+   ```bash
+   docker build -t trident-command-center .
+   docker run -p 7860:7860 trident-command-center
+   ```
 
-### Production Deployment
-```bash
-# Using scripts
-./scripts/deployment/start_app.sh
-
-# Manual deployment
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
-```
+2. Manual Production Execution:
+   ```bash
+   pip install -r requirements-prod.txt
+   gunicorn -b 0.0.0.0:5000 app:app
+   ```
 
 ## 🧪 Testing
 

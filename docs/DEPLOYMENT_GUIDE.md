@@ -4,7 +4,9 @@
 
 ### 1. **File Structure Verification**
 - [ ] `app.py` - Main Flask entrypoint
-- [ ] `requirements.txt` - Python dependencies
+- [ ] `Dockerfile` - Docker configuration for Render / cloud hosting
+- [ ] `requirements-prod.txt` - Production dependencies (CPU PyTorch, Flask, Gunicorn)
+- [ ] `requirements.txt` - Full development dependencies (CV, PyQt, etc.)
 - [ ] `src/frontend/templates/` folder containing the unified interface:
   - [ ] `platform.html` - Consolidated SOS, Dashboard, and Analytics UI
 - [ ] `src/frontend/static/` folder containing assets:
@@ -56,13 +58,15 @@ python app.py
 
 ## 🌐 Access Points
 
-After successful deployment, access:
+### **Live Render Production URL**
+- **Unified Command Platform:** [https://trident-command-center.onrender.com/](https://trident-command-center.onrender.com/)
 
-| Page / Tab | URL | Description |
-|------------|-----|-------------|
-| **Home (SOS)** | http://localhost:5000 (or `/#sos`) | Unified SOS form |
-| **Dashboard** | http://localhost:5000/dashboard (or `/#dashboard`) | Live emergency monitoring tab |
-| **Analytics** | http://localhost:5000/analytics (or `/#analytics`) | Detailed analytics & trends tab |
+### **Local Access Points**
+| Page / Tab | Local URL | Render Live URL | Description |
+|------------|-----------|-----------------|-------------|
+| **Home (SOS)** | `http://localhost:5000` | `https://trident-command-center.onrender.com/` | Unified SOS form |
+| **Dashboard** | `http://localhost:5000/dashboard` | `https://trident-command-center.onrender.com/dashboard` | Live emergency monitoring tab |
+| **Analytics** | `http://localhost:5000/analytics` | `https://trident-command-center.onrender.com/analytics` | Detailed analytics & trends tab |
 
 ## 🔧 Configuration Options
 
