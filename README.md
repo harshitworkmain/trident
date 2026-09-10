@@ -36,6 +36,8 @@ TRIDENT operates across three integrated layers:
 - ESP32-based embedded firmware with multi-sensor integration
 - Real-time vital signs, motion, and GPS monitoring
 - Edge-based emergency detection and alert generation
+- **Cloud Telemetry Push**: Streams sensor data every 1.5s via HTTP POST to the Render-deployed command center (`POST /api/telemetry/wearable`)
+- **Bi-directional Remote Control**: Receives and executes remote commands (reset fall alert, calibrate GSR, update geofence) from the dashboard via HTTP response payload
 
 ### 🖥️ Central Command Dashboard (Decision Layer)
 ![Command Dashboard](assets/images/dashboard-photo.jpg)
@@ -43,6 +45,8 @@ TRIDENT operates across three integrated layers:
 - Web-based emergency response coordination interface
 - AI-powered priority classification and resource allocation
 - Real-time visualization of incidents and response teams
+- **Live Wearable Telemetry Grid**: 6-card dashboard (System Status, Fall Detection, GPS/Geofence, Geofence Config, Vitals Monitor, GSR/Stress) that polls `GET /api/telemetry/wearable/latest` every 1.5 seconds with emergency flash animations
+- **Remote Wearable Control Panel**: Interactive buttons to remotely reset fall alerts, calibrate GSR baseline, and update geofence parameters on the ESP32 device
 
 **Live Telemetry Data Feed:**
 ![Live Telemetry](assets/images/wearable-live-telemetry-data.png)
@@ -216,10 +220,11 @@ python3 main.py
 - **Facial Recognition**: LBPH face recognizer with name mapping and distance tracking
 
 ### Priority Classification
-- Automated severity scoring
+- **Unified Triage Scoring**: Combines SOS form metrics (injuries, vulnerable populations, emergency type) with live wearable telemetry (SpO₂, BPM, fall detection, GSR stress, geofence breach) into a single 1–5 priority score
 - Multi-factor consideration (injuries, vulnerable populations)
 - Resource availability optimization
 - Real-time priority updates
+- **Auto-ROV Scramble**: Priority ≥ 4 automatically triggers Team Alpha (AUTO_DEPLOY) and dispatches the nearest ROV to victim GPS coordinates
 
 ### Response Coordination
 - Team assignment and notification
@@ -269,6 +274,14 @@ python src/rov/tests/test_rov_deployment.py
 - [ROV Operations](docs/ROV_OPERATIONS.md)
 - [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
 - [User Manual](docs/USER_MANUAL.md)
+
+### Wearable Telemetry API Endpoints
+| Endpoint | Method | Description |
+| --- | --- | --- |
+| `/api/telemetry/wearable` | POST | Ingest real-time ESP32 sensor telemetry JSON; returns pending remote commands |
+| `/api/telemetry/wearable/latest` | GET | Poll latest telemetry snapshot for all devices (dashboard 1.5s refresh) |
+| `/api/wearable/control` | POST | Queue remote commands for ESP32 (`reset_fall`, `calibrate_gsr`, `set_geofence`) |
+| `/api/wearable-devices` | GET | Get all wearable devices with status, vitals, and GPS (backed by real telemetry DB) |
 
 ## 🤝 Contributing
 
