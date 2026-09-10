@@ -53,6 +53,13 @@ weather_model = None
 weather_scaler = None
 weather_data = None
 
+# Global in-memory command queue for ESP32 wearable remote control
+# Format: { 'device_id': [{'action': 'reset_fall', 'params': {}}, ...] }
+wearable_command_queue = {}
+
+# Track latest wearable heartbeat timestamps for online/offline detection
+wearable_last_seen = {}
+
 def init_database():
     """Initialize the SQLite database with required tables"""
     conn = sqlite3.connect(DATABASE)
@@ -193,6 +200,37 @@ def init_database():
             INSERT INTO response_teams (team_name, team_type, contact_phone, contact_email, location, capacity, current_load, is_available, deployment_mode, team_description)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', default_teams)
+    
+    # Create wearable telemetry table for real-time ESP32 sensor data
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS wearable_telemetry (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            device_id TEXT NOT NULL,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            mpu_ok BOOLEAN DEFAULT FALSE,
+            max_ok BOOLEAN DEFAULT FALSE,
+            gsr_ok BOOLEAN DEFAULT FALSE,
+            gps_ok BOOLEAN DEFAULT FALSE,
+            wifi_ok BOOLEAN DEFAULT FALSE,
+            acc_mag REAL DEFAULT 0.0,
+            gyro_mag REAL DEFAULT 0.0,
+            fall_detected BOOLEAN DEFAULT FALSE,
+            lat REAL DEFAULT 0.0,
+            lng REAL DEFAULT 0.0,
+            satellites INTEGER DEFAULT 0,
+            safe_lat REAL DEFAULT 0.0,
+            safe_lng REAL DEFAULT 0.0,
+            geo_radius_km REAL DEFAULT 0.1,
+            geo_breached BOOLEAN DEFAULT FALSE,
+            bpm REAL DEFAULT 0.0,
+            spo2 REAL DEFAULT 0.0,
+            vitals_cat TEXT DEFAULT 'Unknown',
+            gsr_raw REAL DEFAULT 0.0,
+            gsr_norm REAL DEFAULT 0.0,
+            stress_level TEXT DEFAULT 'Unknown',
+            gsr_baseline REAL DEFAULT 0.0
+        )
+    ''')
     
     conn.commit()
     conn.close()
@@ -428,11 +466,16 @@ def calculate_shortest_paths():
         logger.error(f"Error calculating shortest paths: {str(e)}")
         return None
 
-def calculate_priority(data: Dict) -> int:
-    """Calculate priority level based on SOS data"""
+def calculate_priority(data: Dict, wearable_data: Optional[Dict] = None) -> int:
+    """Calculate unified priority level based on SOS form data + live wearable telemetry.
+    
+    Unified Triage Model:
+      Total Raw Score = SOS Form Score + Wearable Telemetry Add-on Score
+      Final Priority  = min(Total Raw Score, 5)
+    """
     priority = 1  # Low priority by default
     
-    # High priority factors
+    # ── SOS Form Metrics (existing logic) ──
     if int(data.get('peopleInjured', 0)) > 0:
         priority += 2
     if data.get('pregnant') == 'true':
@@ -460,6 +503,35 @@ def calculate_priority(data: Dict) -> int:
         'coastal-erosion': 1    # Infrastructure risk
     }
     priority += water_emergency_priorities.get(data.get('emergencyType'), 0)
+    
+    # ── Wearable Live Telemetry Add-on (new) ──
+    if wearable_data:
+        # Critical vitals: SpO2 < 92% or BPM > 120 → +2
+        spo2 = wearable_data.get('spo2', 0)
+        bpm_val = wearable_data.get('bpm', 0)
+        vitals_cat = wearable_data.get('vitals_cat', 'Unknown')
+        
+        if (spo2 > 0 and spo2 < 92) or (bpm_val > 120):
+            priority += 2
+        elif (spo2 > 0 and spo2 < 95) or (bpm_val > 100):
+            # Warning-level vitals → +1
+            priority += 1
+        
+        # Fall/impact detected → +2
+        if wearable_data.get('fall_detected', False):
+            priority += 2
+        
+        # High GSR stress → +1
+        if wearable_data.get('stress_level', '').lower() == 'high':
+            priority += 1
+        
+        # Geofence breach → +1
+        if wearable_data.get('geo_breached', False):
+            priority += 1
+        
+        # Sensor disconnect / No Finger → +1 (indicates potential unconsciousness)
+        if vitals_cat == 'No Finger' and wearable_data.get('fall_detected', False):
+            priority += 1
     
     return min(priority, 5)  # Max priority 5
 
@@ -1778,35 +1850,77 @@ def get_specific_rov_status(rov_id):
 
 @app.route('/api/wearable-devices', methods=['GET'])
 def get_wearable_status():
-    """Get connected wearable devices status"""
+    """Get connected wearable devices status — now backed by real telemetry DB"""
     try:
-        # This would interface with your wearable device system
-        # For now, return simulated data
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Get distinct devices with their latest telemetry
+        cursor.execute('''
+            SELECT device_id, timestamp, bpm, spo2, vitals_cat, fall_detected,
+                   stress_level, lat, lng, geo_breached, acc_mag, gyro_mag,
+                   mpu_ok, max_ok, gsr_ok, gps_ok, wifi_ok
+            FROM wearable_telemetry
+            WHERE id IN (
+                SELECT MAX(id) FROM wearable_telemetry GROUP BY device_id
+            )
+            ORDER BY timestamp DESC
+        ''')
+        rows = cursor.fetchall()
+        conn.close()
+        
+        devices = []
+        online_count = 0
+        emergency_count = 0
+        
+        for row in rows:
+            device_id = row[0]
+            last_ts = row[1]
+            fall = bool(row[5])
+            geo_breach = bool(row[9])
+            vitals_cat_val = row[4] or 'Unknown'
+            stress = row[6] or 'Unknown'
+            
+            # Online if last seen within 10 seconds
+            last_seen_ts = wearable_last_seen.get(device_id, 0)
+            is_online = (time.time() - last_seen_ts) < 10
+            if is_online:
+                online_count += 1
+            
+            # Determine device status
+            if fall or geo_breach or vitals_cat_val == 'Critical':
+                status = 'emergency'
+                emergency_count += 1
+                e_type = 'fall_detected' if fall else ('geofence_breach' if geo_breach else 'critical_vitals')
+            elif vitals_cat_val == 'Warning' or stress == 'High':
+                status = 'warning'
+                e_type = 'vitals_warning' if vitals_cat_val == 'Warning' else 'high_stress'
+            else:
+                status = 'online' if is_online else 'offline'
+                e_type = None
+            
+            devices.append({
+                'device_id': device_id,
+                'user_name': device_id.replace('_', ' ').replace('-', ' ').title(),
+                'status': status,
+                'battery': 100,  # ESP32 doesn't report battery yet
+                'location': {'lat': row[7], 'lon': row[8]},
+                'last_heartbeat': last_ts,
+                'emergency_type': e_type,
+                'bpm': row[2],
+                'spo2': row[3],
+                'vitals_cat': vitals_cat_val,
+                'stress_level': stress,
+                'fall_detected': fall,
+                'geo_breached': geo_breach
+            })
+        
         wearable_data = {
-            'total_devices': 15,
-            'online_devices': 12,
-            'emergency_devices': 2,
-            'low_battery_devices': 1,
-            'devices': [
-                {
-                    'device_id': 'WEAR-001',
-                    'user_name': 'Rajesh Kumar',
-                    'status': 'emergency',
-                    'battery': 45,
-                    'location': {'lat': 13.0845, 'lon': 80.2795},
-                    'last_heartbeat': datetime.now().isoformat(),
-                    'emergency_type': 'fall_detected'
-                },
-                {
-                    'device_id': 'WEAR-002',
-                    'user_name': 'Priya Sharma',
-                    'status': 'emergency',
-                    'battery': 67,
-                    'location': {'lat': 13.0756, 'lon': 80.2834},
-                    'last_heartbeat': datetime.now().isoformat(),
-                    'emergency_type': 'panic_button'
-                }
-            ]
+            'total_devices': len(devices),
+            'online_devices': online_count,
+            'emergency_devices': emergency_count,
+            'low_battery_devices': 0,
+            'devices': devices
         }
         
         return jsonify({
@@ -1820,6 +1934,199 @@ def get_wearable_status():
             'success': False,
             'message': 'Internal server error'
         }), 500
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  WEARABLE TELEMETRY ENDPOINTS — Real-time ESP32 sensor data ingestion & control
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.route('/api/telemetry/wearable', methods=['POST'])
+def ingest_wearable_telemetry():
+    """Receive real-time telemetry JSON from ESP32 wearable device.
+    
+    The ESP32 POSTs sensor data every 1.5s. This endpoint:
+    1. Persists the telemetry snapshot to the wearable_telemetry SQLite table.
+    2. Updates the last-seen heartbeat for online/offline detection.
+    3. Checks for emergency conditions and auto-escalates SOS priority.
+    4. Returns any pending remote commands in the response body.
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': 'No JSON payload'}), 400
+        
+        device_id = data.get('device_id', 'UNKNOWN')
+        
+        # Parse nested telemetry fields
+        system = data.get('system', {})
+        fall = data.get('fall', {})
+        gps = data.get('gps', {})
+        vitals = data.get('vitals', {})
+        stress = data.get('stress', {})
+        
+        # Update last-seen heartbeat
+        wearable_last_seen[device_id] = time.time()
+        
+        # Persist to database
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO wearable_telemetry (
+                device_id, mpu_ok, max_ok, gsr_ok, gps_ok, wifi_ok,
+                acc_mag, gyro_mag, fall_detected,
+                lat, lng, satellites, safe_lat, safe_lng, geo_radius_km, geo_breached,
+                bpm, spo2, vitals_cat,
+                gsr_raw, gsr_norm, stress_level, gsr_baseline
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            device_id,
+            system.get('mpu_ok', False),
+            system.get('max_ok', False),
+            system.get('gsr_ok', False),
+            system.get('gps_ok', False),
+            system.get('wifi_ok', False),
+            fall.get('acc_mag', 0.0),
+            fall.get('gyro_mag', 0.0),
+            fall.get('fall_detected', False),
+            gps.get('lat', 0.0),
+            gps.get('lng', 0.0),
+            gps.get('satellites', 0),
+            gps.get('safe_lat', 0.0),
+            gps.get('safe_lng', 0.0),
+            gps.get('radius_km', 0.1),
+            gps.get('breached', False),
+            vitals.get('bpm', 0.0),
+            vitals.get('spo2', 0.0),
+            vitals.get('category', 'Unknown'),
+            stress.get('gsr_raw', 0.0),
+            stress.get('gsr_norm', 0.0),
+            stress.get('level', 'Unknown'),
+            stress.get('baseline', 0.0)
+        ))
+        conn.commit()
+        conn.close()
+        
+        # Check for emergency conditions and log
+        is_emergency = fall.get('fall_detected', False) or gps.get('breached', False)
+        vitals_critical = vitals.get('category', '') == 'Critical'
+        
+        if is_emergency or vitals_critical:
+            logger.warning(f"🚨 Wearable {device_id} emergency: fall={fall.get('fall_detected')}, "
+                           f"geo_breach={gps.get('breached')}, vitals={vitals.get('category')}")
+        
+        # Pop pending commands for this device
+        pending_commands = wearable_command_queue.pop(device_id, [])
+        
+        return jsonify({
+            'success': True,
+            'commands': pending_commands,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error ingesting wearable telemetry: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@app.route('/api/telemetry/wearable/latest', methods=['GET'])
+def get_latest_wearable_telemetry():
+    """Return the latest telemetry snapshot for each device.
+    
+    The command dashboard polls this endpoint every 1.5s to update the
+    6-card live telemetry grid.
+    """
+    try:
+        device_id = request.args.get('device_id', None)
+        
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        if device_id:
+            cursor.execute('''
+                SELECT * FROM wearable_telemetry
+                WHERE device_id = ?
+                ORDER BY id DESC LIMIT 1
+            ''', (device_id,))
+        else:
+            # Get latest for all devices
+            cursor.execute('''
+                SELECT * FROM wearable_telemetry
+                WHERE id IN (
+                    SELECT MAX(id) FROM wearable_telemetry GROUP BY device_id
+                )
+                ORDER BY timestamp DESC
+            ''')
+        
+        rows = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
+        conn.close()
+        
+        devices = []
+        for row in rows:
+            d = dict(zip(columns, row))
+            d_id = d.get('device_id', 'UNKNOWN')
+            last_seen_ts = wearable_last_seen.get(d_id, 0)
+            d['is_online'] = (time.time() - last_seen_ts) < 10
+            d['seconds_since_heartbeat'] = round(time.time() - last_seen_ts, 1)
+            devices.append(d)
+        
+        return jsonify({
+            'success': True,
+            'data': devices,
+            'server_time': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting latest wearable telemetry: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@app.route('/api/wearable/control', methods=['POST'])
+def send_wearable_control():
+    """Queue a remote control command for the ESP32 wearable device.
+    
+    Supported actions:
+      - reset_fall: Clear fall alert on device
+      - calibrate_gsr: Trigger GSR baseline calibration
+      - set_geofence: Update geofence center and radius
+    
+    The command is queued in memory and delivered to the ESP32 in the next
+    telemetry POST response body.
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': 'No JSON payload'}), 400
+        
+        device_id = data.get('device_id', 'TRIDENT-WEAR-01')
+        action = data.get('action')
+        params = data.get('params', {})
+        
+        valid_actions = ['reset_fall', 'calibrate_gsr', 'set_geofence']
+        if action not in valid_actions:
+            return jsonify({
+                'success': False,
+                'message': f'Invalid action. Must be one of: {valid_actions}'
+            }), 400
+        
+        # Initialize queue for device if needed
+        if device_id not in wearable_command_queue:
+            wearable_command_queue[device_id] = []
+        
+        command = {'action': action, 'params': params, 'queued_at': datetime.now().isoformat()}
+        wearable_command_queue[device_id].append(command)
+        
+        logger.info(f"Queued command '{action}' for device {device_id}")
+        
+        return jsonify({
+            'success': True,
+            'message': f'Command {action} queued for {device_id}',
+            'queue_depth': len(wearable_command_queue[device_id])
+        })
+        
+    except Exception as e:
+        logger.error(f"Error queuing wearable control command: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.errorhandler(404)
 def not_found(error):

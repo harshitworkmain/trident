@@ -16,6 +16,8 @@ async function initializeDashboard() {
             loadROVStatus(),
             loadWearableStatus()
         ]);
+        // Start live telemetry polling for the 6-card grid
+        startTelemetryPolling();
         showSuccess('Dashboard loaded successfully!');
     } catch (error) {
         console.error('Error initializing dashboard:', error);
@@ -431,6 +433,222 @@ async function refreshWearableStatus() {
     showSuccess('Wearable status refreshed!');
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  LIVE WEARABLE TELEMETRY POLLING & 6-CARD DOM UPDATER
+// ═══════════════════════════════════════════════════════════════════════════
+
+let telemetryInterval = null;
+
+function startTelemetryPolling() {
+    // Initial fetch
+    fetchAndUpdateTelemetry();
+    // Poll every 1.5 seconds
+    if (telemetryInterval) clearInterval(telemetryInterval);
+    telemetryInterval = setInterval(fetchAndUpdateTelemetry, 1500);
+}
+
+function stopTelemetryPolling() {
+    if (telemetryInterval) {
+        clearInterval(telemetryInterval);
+        telemetryInterval = null;
+    }
+}
+
+async function fetchAndUpdateTelemetry() {
+    try {
+        const response = await fetch('/api/telemetry/wearable/latest');
+        const result = await response.json();
+        
+        if (result.success && result.data && result.data.length > 0) {
+            // Use the first (or primary) device's telemetry
+            const d = result.data[0];
+            updateTelemetryCards(d);
+        } else {
+            // No devices reporting yet — show waiting state
+            updateTelemetryConnectionStatus(false);
+        }
+    } catch (error) {
+        console.error('Telemetry fetch error:', error);
+        updateTelemetryConnectionStatus(false);
+    }
+}
+
+function updateTelemetryCards(d) {
+    const isOnline = d.is_online || false;
+    updateTelemetryConnectionStatus(isOnline, d.device_id);
+    
+    // Card 1: System Hardware Status
+    const sysBody = document.getElementById('systemStatusBody');
+    if (sysBody) {
+        sysBody.innerHTML = 
+            `MPU6050: ${statusBadge(d.mpu_ok)}<br>` +
+            `MAX30102: ${statusBadge(d.max_ok)}<br>` +
+            `GSR: ${statusBadge(d.gsr_ok)}<br>` +
+            `GPS: ${d.gps_ok ? '<span class="telem-ok">Fix Acquired</span>' : '<span class="telem-warn">Searching...</span>'}<br>` +
+            `Wi-Fi: ${d.wifi_ok ? '<span class="telem-ok">Connected</span>' : '<span class="telem-warn">Offline</span>'}`;
+    }
+    
+    // Card 2: Fall Detection
+    const accEl = document.getElementById('accMagVal');
+    const gyroEl = document.getElementById('gyroMagVal');
+    const fallBadge = document.getElementById('fallStatusBadge');
+    const fallReset = document.getElementById('fallResetContainer');
+    const fallCard = document.getElementById('cardFall');
+    
+    if (accEl) accEl.textContent = (d.acc_mag || 0).toFixed(2);
+    if (gyroEl) gyroEl.textContent = (d.gyro_mag || 0).toFixed(2);
+    
+    if (fallBadge) {
+        if (d.fall_detected) {
+            fallBadge.className = 'telem-bad';
+            fallBadge.textContent = 'FALL DETECTED';
+            if (fallReset) fallReset.style.display = 'block';
+            if (fallCard) fallCard.classList.add('emergency-flash');
+        } else {
+            fallBadge.className = 'telem-ok';
+            fallBadge.textContent = 'Normal';
+            if (fallReset) fallReset.style.display = 'none';
+            if (fallCard) fallCard.classList.remove('emergency-flash');
+        }
+    }
+    
+    // Card 3: GPS & Geofence
+    setTextById('gpsLat', (d.lat || 0).toFixed(6));
+    setTextById('gpsLng', (d.lng || 0).toFixed(6));
+    setTextById('gpsSats', d.satellites || 0);
+    setTextById('safeLat', (d.safe_lat || 0).toFixed(6));
+    setTextById('safeLng', (d.safe_lng || 0).toFixed(6));
+    
+    const geoBadge = document.getElementById('geoStatusBadge');
+    const gpsCard = document.getElementById('cardGPS');
+    if (geoBadge) {
+        if (d.geo_breached) {
+            geoBadge.className = 'telem-bad';
+            geoBadge.textContent = 'OUTSIDE FENCE';
+            if (gpsCard) gpsCard.classList.add('emergency-flash');
+        } else {
+            geoBadge.className = 'telem-ok';
+            geoBadge.textContent = 'Inside Fence';
+            if (gpsCard) gpsCard.classList.remove('emergency-flash');
+        }
+    }
+    
+    // Card 4: Update geofence config inputs with current values
+    const geoLatInput = document.getElementById('geoConfigLat');
+    const geoLngInput = document.getElementById('geoConfigLng');
+    const geoRadInput = document.getElementById('geoConfigRad');
+    // Only update if user is not currently editing
+    if (geoLatInput && document.activeElement !== geoLatInput) geoLatInput.value = (d.safe_lat || 12.8239).toFixed(6);
+    if (geoLngInput && document.activeElement !== geoLngInput) geoLngInput.value = (d.safe_lng || 80.0467).toFixed(6);
+    if (geoRadInput && document.activeElement !== geoRadInput) geoRadInput.value = d.geo_radius_km || 0.1;
+    
+    // Card 5: Vitals
+    setTextById('bpmVal', Math.round(d.bpm || 0));
+    setTextById('spo2Val', (d.spo2 || 0).toFixed(1));
+    
+    const vitalsBadge = document.getElementById('vitalsCatBadge');
+    if (vitalsBadge) {
+        const cat = d.vitals_cat || 'Unknown';
+        if (cat === 'Critical') { vitalsBadge.className = 'telem-bad'; vitalsBadge.textContent = 'Critical'; }
+        else if (cat === 'Warning') { vitalsBadge.className = 'telem-warn'; vitalsBadge.textContent = 'Warning'; }
+        else if (cat === 'No Finger') { vitalsBadge.className = 'telem-warn'; vitalsBadge.textContent = 'No Finger'; }
+        else if (cat === 'Normal') { vitalsBadge.className = 'telem-ok'; vitalsBadge.textContent = 'Normal'; }
+        else { vitalsBadge.className = 'telem-warn'; vitalsBadge.textContent = cat; }
+    }
+    
+    // Card 6: GSR / Stress
+    setTextById('gsrRawVal', Math.round(d.gsr_raw || 0));
+    
+    const stressBadge = document.getElementById('stressLevelBadge');
+    if (stressBadge) {
+        const lvl = d.stress_level || 'Unknown';
+        if (lvl === 'High') { stressBadge.className = 'telem-bad'; stressBadge.textContent = 'High'; }
+        else if (lvl === 'Medium') { stressBadge.className = 'telem-warn'; stressBadge.textContent = 'Medium'; }
+        else if (lvl === 'Low') { stressBadge.className = 'telem-ok'; stressBadge.textContent = 'Low'; }
+        else { stressBadge.className = 'telem-warn'; stressBadge.textContent = lvl; }
+    }
+}
+
+function updateTelemetryConnectionStatus(isOnline, deviceId) {
+    const dot = document.getElementById('telemetryDot');
+    const statusText = document.getElementById('telemetryConnectionStatus');
+    
+    if (dot) {
+        dot.className = isOnline ? 'telemetry-dot online' : 'telemetry-dot offline';
+    }
+    if (statusText) {
+        statusText.textContent = isOnline 
+            ? `${deviceId || 'Device'} • Connected` 
+            : 'Waiting for device...';
+    }
+}
+
+function statusBadge(ok) {
+    return ok ? '<span class="telem-ok">OK</span>' : '<span class="telem-warn">Not Detected</span>';
+}
+
+function setTextById(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+}
+
+// ── Remote Wearable Control Commands ──
+
+async function sendWearableCommand(action) {
+    try {
+        const response = await fetch('/api/wearable/control', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                device_id: 'TRIDENT-WEAR-01',
+                action: action,
+                params: {}
+            })
+        });
+        const result = await response.json();
+        if (result.success) {
+            showSuccess(`Command '${action}' sent to wearable`);
+        } else {
+            showError(result.message || 'Failed to send command');
+        }
+    } catch (error) {
+        console.error('Error sending wearable command:', error);
+        showError('Failed to send command to wearable');
+    }
+}
+
+async function sendGeofenceUpdate() {
+    const lat = parseFloat(document.getElementById('geoConfigLat').value);
+    const lng = parseFloat(document.getElementById('geoConfigLng').value);
+    const rad = parseFloat(document.getElementById('geoConfigRad').value);
+    
+    if (isNaN(lat) || isNaN(lng) || isNaN(rad) || rad <= 0) {
+        showError('Invalid geofence parameters');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/wearable/control', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                device_id: 'TRIDENT-WEAR-01',
+                action: 'set_geofence',
+                params: { latitude: lat, longitude: lng, radius: rad }
+            })
+        });
+        const result = await response.json();
+        if (result.success) {
+            showSuccess('Geofence update command queued');
+        } else {
+            showError(result.message || 'Failed to update geofence');
+        }
+    } catch (error) {
+        console.error('Error sending geofence update:', error);
+        showError('Failed to update geofence');
+    }
+}
+
 // Helper functions
 function formatEmergencyType(type) {
     return type.charAt(0).toUpperCase() + type.slice(1);
@@ -451,13 +669,13 @@ function getAssignedTeam(referenceId) {
     return request && request.assignedTeam ? request.assignedTeam : 'Not assigned';
 }
 
-// Auto-refresh setup
+// Auto-refresh setup (30s for stats/ROV/wearable list; telemetry grid uses its own 1.5s interval)
 function setupAutoRefresh() {
     refreshInterval = setInterval(async () => {
         await loadStatistics();
         await loadROVStatus();
         await loadWearableStatus();
-    }, 30000); // Refresh every 30 seconds
+    }, 30000);
 }
 
 // Success/error notifications

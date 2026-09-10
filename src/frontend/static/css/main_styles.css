@@ -1253,3 +1253,217 @@ body {
     outline: 2px solid var(--accent-color);
     outline-offset: 2px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WEARABLE TELEMETRY GRID — Ported from ESP32 main_controller.ino UI
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.wearable-telemetry-section {
+    background: #0f1220;
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 24px;
+    border: 1px solid #1e2a4a;
+}
+
+.telemetry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.telemetry-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.telemetry-title i {
+    font-size: 1.5rem;
+    color: #71a7ff;
+}
+
+.telemetry-title h2 {
+    font-size: 1.25rem;
+    color: #71a7ff;
+    margin: 0;
+    font-weight: 600;
+}
+
+.telemetry-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #9aa3b2;
+    font-size: 0.85rem;
+}
+
+.telemetry-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #9aa3b2;
+    display: inline-block;
+    transition: background 0.3s ease;
+}
+
+.telemetry-dot.online {
+    background: #27d17f;
+    box-shadow: 0 0 8px rgba(39, 209, 127, 0.5);
+    animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+.telemetry-dot.offline {
+    background: #ff6b6b;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.telem-card {
+    background: #151a2e;
+    border: 1px solid #283154;
+    border-radius: 12px;
+    padding: 16px;
+    min-height: 140px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.telem-card:hover {
+    border-color: #3b5998;
+    box-shadow: 0 0 12px rgba(59, 89, 152, 0.15);
+}
+
+.telem-card-label {
+    color: #9db3ff;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: block;
+    font-size: 0.95rem;
+}
+
+.telem-card-body {
+    color: #e8e8f0;
+    line-height: 1.7;
+    font-size: 0.9rem;
+}
+
+.telem-val-large {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* Status badges matching .ino color system */
+.telem-ok {
+    color: #27d17f;
+    font-weight: 600;
+}
+
+.telem-warn {
+    color: #ffcc66;
+    font-weight: 600;
+}
+
+.telem-bad {
+    color: #ff6b6b;
+    font-weight: 600;
+}
+
+/* Telemetry control buttons */
+.telem-btn {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: #223158;
+    color: #fff;
+    text-decoration: none;
+    border: 1px solid #2f4a8f;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.telem-btn:hover {
+    background: #2d4070;
+    border-color: #4a6abf;
+}
+
+.telem-btn i {
+    margin-right: 4px;
+}
+
+/* Telemetry form controls */
+.telem-form-group {
+    margin-bottom: 8px;
+}
+
+.telem-form-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.8rem;
+    color: #9db3ff;
+}
+
+.telem-form-group input[type='number'] {
+    width: 100%;
+    box-sizing: border-box;
+    background: #223158;
+    color: white;
+    border: 1px solid #2f4a8f;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.telem-form-group input[type='number']:focus {
+    border-color: #71a7ff;
+    outline: none;
+}
+
+.telemetry-footer {
+    color: #9aa3b2;
+    font-size: 0.75rem;
+    text-align: center;
+    width: 100%;
+    padding: 14px 0 0;
+}
+
+/* Emergency flash animation for fall/geofence cards */
+.telem-card.emergency-flash {
+    animation: card-flash 1s ease-in-out infinite;
+    border-color: #ff6b6b;
+}
+
+@keyframes card-flash {
+    0%, 100% { box-shadow: 0 0 0 rgba(255, 107, 107, 0); }
+    50% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.35); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .telemetry-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .telemetry-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .telemetry-title h2 {
+        font-size: 1rem;
+    }
+}

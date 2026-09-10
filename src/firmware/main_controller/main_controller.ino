@@ -1,5 +1,7 @@
 #include <WiFi.h>
 #include <WebServer.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
 #include <Wire.h>
 #include <TinyGPSPlus.h>
 #include <HardwareSerial.h>
@@ -56,6 +58,12 @@ String stressLevel = "Unknown";
 
 // --- System Status Flags ---
 bool mpuOK=false, maxOK=false, wifiOK=false, gpsOK=false, gsrOK=false;
+
+// --- Cloud Telemetry Configuration ---
+const char* telemetryUrl = "https://trident-command-center.onrender.com/api/telemetry/wearable";
+const char* deviceId = "TRIDENT-WEAR-01";
+unsigned long lastTelemetrySend = 0;
+const unsigned long TELEMETRY_INTERVAL_MS = 1500;  // Send every 1.5 seconds
 
 // --- Webpage CSS Styling ---
 String style() {
@@ -376,6 +384,103 @@ void handleAlerts() {
   digitalWrite(BUZZER_PIN, critical ? HIGH : LOW);
 }
 
+// --- Cloud Telemetry: Send sensor data to Render backend ---
+void sendTelemetry() {
+  if (!wifiOK || WiFi.status() != WL_CONNECTED) return;
+  if (millis() - lastTelemetrySend < TELEMETRY_INTERVAL_MS) return;
+  lastTelemetrySend = millis();
+
+  HTTPClient http;
+  http.setTimeout(2000);  // 2s timeout to avoid blocking sensor loops
+  http.begin(telemetryUrl);
+  http.addHeader("Content-Type", "application/json");
+
+  // Build JSON payload using ArduinoJson
+  StaticJsonDocument<512> doc;
+  doc["device_id"] = deviceId;
+
+  JsonObject sys = doc.createNestedObject("system");
+  sys["mpu_ok"] = mpuOK;
+  sys["max_ok"] = maxOK;
+  sys["gsr_ok"] = gsrOK;
+  sys["gps_ok"] = gps.location.isValid();
+  sys["wifi_ok"] = wifiOK;
+
+  JsonObject fall = doc.createNestedObject("fall");
+  fall["acc_mag"] = accMag;
+  fall["gyro_mag"] = gyroMag;
+  fall["fall_detected"] = fallDetected;
+
+  JsonObject gpsObj = doc.createNestedObject("gps");
+  gpsObj["lat"] = currentLat;
+  gpsObj["lng"] = currentLng;
+  gpsObj["satellites"] = (int)sats;
+  gpsObj["safe_lat"] = SAFE_LAT;
+  gpsObj["safe_lng"] = SAFE_LNG;
+  gpsObj["radius_km"] = GEO_RADIUS_KM;
+  gpsObj["breached"] = geoBreached;
+
+  JsonObject vitalsObj = doc.createNestedObject("vitals");
+  vitalsObj["bpm"] = bpm;
+  vitalsObj["spo2"] = spo2;
+  vitalsObj["category"] = vitalsCat;
+
+  JsonObject stressObj = doc.createNestedObject("stress");
+  stressObj["gsr_raw"] = gsrSmooth;
+  stressObj["gsr_norm"] = gsrNorm;
+  stressObj["level"] = stressLevel;
+  stressObj["baseline"] = gsrBaseline;
+
+  String payload;
+  serializeJson(doc, payload);
+
+  int httpCode = http.POST(payload);
+
+  if (httpCode == 200) {
+    String response = http.getString();
+    // Parse response for remote commands
+    StaticJsonDocument<256> respDoc;
+    DeserializationError err = deserializeJson(respDoc, response);
+    if (!err && respDoc.containsKey("commands")) {
+      JsonArray commands = respDoc["commands"].as<JsonArray>();
+      for (JsonObject cmd : commands) {
+        processRemoteCommand(cmd);
+      }
+    }
+  } else if (httpCode > 0) {
+    Serial.print("Telemetry HTTP error: ");
+    Serial.println(httpCode);
+  }
+  // Silently ignore network errors to avoid Serial flooding
+
+  http.end();
+}
+
+// --- Process remote commands received from backend ---
+void processRemoteCommand(JsonObject& cmd) {
+  const char* action = cmd["action"] | "";
+
+  if (strcmp(action, "reset_fall") == 0) {
+    fallDetected = false;
+    Serial.println("Remote: Fall alert reset");
+  }
+  else if (strcmp(action, "calibrate_gsr") == 0) {
+    gsrBaseline = gsrSmooth;
+    gsrBaselineSet = true;
+    Serial.println("Remote: GSR baseline calibrated");
+  }
+  else if (strcmp(action, "set_geofence") == 0) {
+    JsonObject params = cmd["params"];
+    if (params.containsKey("latitude")) SAFE_LAT = params["latitude"].as<float>();
+    if (params.containsKey("longitude")) SAFE_LNG = params["longitude"].as<float>();
+    if (params.containsKey("radius")) {
+      float r = params["radius"].as<float>();
+      if (r > 0) GEO_RADIUS_KM = r;
+    }
+    Serial.println("Remote: Geofence updated");
+  }
+}
+
 // --- Main Loop ---
 void loop() {
   updateMPU();
@@ -383,9 +488,9 @@ void loop() {
   updateVitals();
   updateGSR();
   handleAlerts();
+  sendTelemetry();  // Non-blocking cloud telemetry push
   if (wifiOK) {
     server.handleClient();
   }
   delay(20);
 }
-

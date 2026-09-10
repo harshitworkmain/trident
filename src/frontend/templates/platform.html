@@ -1546,6 +1546,112 @@
                 </div>
             </div>
         </div>
+
+        <!-- ===== SECTION 2: Live Wearable Telemetry & Control Grid ===== -->
+        <div class="wearable-telemetry-section" id="wearableTelemetrySection">
+            <div class="telemetry-header">
+                <div class="telemetry-title">
+                    <i class="fas fa-broadcast-tower"></i>
+                    <h2>TRIDENT Smart Wearable • Live Telemetry & Control</h2>
+                </div>
+                <div class="telemetry-status">
+                    <span class="telemetry-dot" id="telemetryDot"></span>
+                    <span id="telemetryConnectionStatus">Waiting for device...</span>
+                </div>
+            </div>
+
+            <div class="telemetry-grid">
+                <!-- Card 1: System Hardware Status -->
+                <div class="telem-card" id="cardSystem">
+                    <div class="telem-card-label">System</div>
+                    <div class="telem-card-body" id="systemStatusBody">
+                        MPU6050: <span class="telem-warn">No Data</span><br>
+                        MAX30102: <span class="telem-warn">No Data</span><br>
+                        GSR: <span class="telem-warn">No Data</span><br>
+                        GPS: <span class="telem-warn">No Data</span><br>
+                        Wi-Fi: <span class="telem-warn">No Data</span>
+                    </div>
+                </div>
+
+                <!-- Card 2: Fall Detection -->
+                <div class="telem-card" id="cardFall">
+                    <div class="telem-card-label">Fall Detection</div>
+                    <div class="telem-card-body">
+                        Acc Mag: <span id="accMagVal">0.00</span> g<br>
+                        Gyro Mag: <span id="gyroMagVal">0.00</span> °/s<br>
+                        Status: <span id="fallStatusBadge" class="telem-ok">Normal</span>
+                        <div id="fallResetContainer" style="display:none; margin-top: 8px;">
+                            <button class="telem-btn" onclick="sendWearableCommand('reset_fall')">
+                                <i class="fas fa-undo"></i> Reset Alert
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Live GPS & Geofence Status -->
+                <div class="telem-card" id="cardGPS">
+                    <div class="telem-card-label">Live GPS & Geofence Status</div>
+                    <div class="telem-card-body">
+                        Current Lat: <span id="gpsLat">0.000000</span><br>
+                        Current Lng: <span id="gpsLng">0.000000</span><br>
+                        Satellites: <span id="gpsSats">0</span>
+                        <hr style="border-color:#283154; margin:8px 0;">
+                        Center Lat: <span id="safeLat">0.000000</span><br>
+                        Center Lng: <span id="safeLng">0.000000</span><br>
+                        Status: <span id="geoStatusBadge" class="telem-ok">Inside Fence</span>
+                    </div>
+                </div>
+
+                <!-- Card 4: Geofence Configuration -->
+                <div class="telem-card" id="cardGeofenceConfig">
+                    <div class="telem-card-label">Geofence Configuration</div>
+                    <div class="telem-card-body">
+                        <div class="telem-form-group">
+                            <label for="geoConfigLat">Center Latitude:</label>
+                            <input type="number" id="geoConfigLat" step="0.000001" value="12.823900">
+                        </div>
+                        <div class="telem-form-group">
+                            <label for="geoConfigLng">Center Longitude:</label>
+                            <input type="number" id="geoConfigLng" step="0.000001" value="80.046700">
+                        </div>
+                        <div class="telem-form-group">
+                            <label for="geoConfigRad">Radius (km):</label>
+                            <input type="number" id="geoConfigRad" step="0.01" min="0.01" value="0.1">
+                        </div>
+                        <button class="telem-btn" onclick="sendGeofenceUpdate()">
+                            <i class="fas fa-map-marker-alt"></i> Update Geofence
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card 5: Vitals Monitor -->
+                <div class="telem-card" id="cardVitals">
+                    <div class="telem-card-label">Vitals (MAX30102)</div>
+                    <div class="telem-card-body">
+                        HR: <span id="bpmVal" class="telem-val-large">0</span> bpm<br>
+                        SpO2: <span id="spo2Val" class="telem-val-large">0.0</span> %<br>
+                        Category: <span id="vitalsCatBadge" class="telem-warn">No Data</span>
+                    </div>
+                </div>
+
+                <!-- Card 6: GSR / Stress Monitor -->
+                <div class="telem-card" id="cardGSR">
+                    <div class="telem-card-label">GSR / Stress</div>
+                    <div class="telem-card-body">
+                        Raw: <span id="gsrRawVal">0</span><br>
+                        Stress: <span id="stressLevelBadge" class="telem-warn">No Data</span>
+                        <div style="margin-top: 10px;">
+                            <button class="telem-btn" onclick="sendWearableCommand('calibrate_gsr')">
+                                <i class="fas fa-balance-scale"></i> Calibrate Baseline
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="telemetry-footer">Auto-refresh: 1.5s</div>
+        </div>
+
     </div>
 
     <!-- Modals -->
