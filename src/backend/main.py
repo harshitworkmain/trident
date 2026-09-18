@@ -271,7 +271,7 @@ def init_ai_model():
         model_path = 'data/models/weather_lstm.pth'
         if os.path.exists(model_path):
             try:
-                model_data = torch.load(model_path, map_location='cpu')
+                model_data = torch.load(model_path, map_location='cpu', weights_only=False)
                 
                 if isinstance(model_data, dict) and 'model_state_dict' in model_data:
                     weather_model.load_state_dict(model_data['model_state_dict'])
