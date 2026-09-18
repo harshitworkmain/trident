@@ -1467,3 +1467,203 @@ body {
         font-size: 1rem;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TRIDENT Brand Logo Image Styling
+   ═══════════════════════════════════════════════════════════════════════ */
+.brand-logo-img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    margin-right: 10px;
+    vertical-align: middle;
+    filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.4));
+    transition: filter 0.3s ease;
+}
+
+.brand-logo-img:hover {
+    filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.7));
+}
+
+.footer-logo .brand-logo-img {
+    height: 28px;
+}
+
+h1 .brand-logo-img {
+    height: 36px;
+    margin-right: 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   AI Vitality Risk Radar Widget
+   ═══════════════════════════════════════════════════════════════════════ */
+.ai-risk-radar {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-risk-radar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7);
+}
+
+.ai-risk-radar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.ai-risk-radar-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.ai-risk-radar-title i {
+    color: #818cf8;
+    font-size: 1.1rem;
+}
+
+.ai-risk-radar-body {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.risk-score-ring {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+}
+
+.risk-score-ring svg {
+    width: 80px;
+    height: 80px;
+    transform: rotate(-90deg);
+}
+
+.risk-score-ring .ring-bg {
+    fill: none;
+    stroke: rgba(100, 116, 139, 0.3);
+    stroke-width: 6;
+}
+
+.risk-score-ring .ring-fill {
+    fill: none;
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s ease, stroke 0.5s ease;
+}
+
+.risk-score-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+}
+
+.risk-info {
+    flex: 1;
+}
+
+.health-state-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.risk-description {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* Health state badge colors */
+.health-state-badge.state-stable {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+.health-state-badge.state-elevated-stress {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+.health-state-badge.state-hypothermia-risk {
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+}
+.health-state-badge.state-aspiration-hypoxia {
+    background: rgba(168, 85, 247, 0.15);
+    color: #a855f7;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+.health-state-badge.state-hemorrhagic-shock {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.health-state-badge.state-concussive-stasis {
+    background: rgba(249, 115, 22, 0.15);
+    color: #f97316;
+    border: 1px solid rgba(249, 115, 22, 0.3);
+}
+.health-state-badge.state-crush-entrapment {
+    background: rgba(220, 38, 38, 0.15);
+    color: #dc2626;
+    border: 1px solid rgba(220, 38, 38, 0.3);
+}
+.health-state-badge.state-cardiac-arrest {
+    background: rgba(190, 18, 60, 0.15);
+    color: #fb7185;
+    border: 1px solid rgba(190, 18, 60, 0.3);
+    animation: pulse-critical 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-critical {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(190, 18, 60, 0); }
+    50% { box-shadow: 0 0 12px 2px rgba(190, 18, 60, 0.4); }
+}
+
+/* Risk ring stroke colors by severity */
+.risk-low .ring-fill { stroke: #22c55e; }
+.risk-moderate .ring-fill { stroke: #eab308; }
+.risk-high .ring-fill { stroke: #f97316; }
+.risk-critical .ring-fill { stroke: #ef4444; }
+
+.ai-risk-radar.risk-critical {
+    border-color: rgba(239, 68, 68, 0.4);
+    animation: radar-pulse 2s ease-in-out infinite;
+}
+
+@keyframes radar-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    50% { box-shadow: 0 0 20px 4px rgba(239, 68, 68, 0.15); }
+}

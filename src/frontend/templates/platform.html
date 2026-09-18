@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main_styles.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/TRIDENT_logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/TRIDENT_logo.png') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* ========= Platform Header ========= */
@@ -1064,7 +1066,7 @@
     <header class="platform-header">
         <div class="platform-header-inner">
             <div class="platform-brand">
-                <i class="fas fa-shield-alt"></i>
+                <img src="{{ url_for('static', filename='images/TRIDENT_logo.png') }}" alt="TRIDENT Logo" class="brand-logo-img">
                 <span>TRIDENT</span>
             </div>
             <nav class="platform-nav">
@@ -1351,7 +1353,7 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-logo">
-                    <i class="fas fa-shield-alt"></i>
+                    <img src="{{ url_for('static', filename='images/TRIDENT_logo.png') }}" alt="TRIDENT Logo" class="brand-logo-img">
                     <h3>TRIDENT</h3>
                 </div>
                 <p>&copy; 2024 Trident Emergency Response System. All rights reserved.</p>
@@ -1374,7 +1376,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" onclick="closeModal()">OK</button>
+                <button class="btn btn-primary" onclick="closeModal('successModal')">OK</button>
             </div>
         </div>
     </div>
@@ -1392,7 +1394,7 @@
             <div class="dashboard-title">
                 <div class="title-section">
                     <h1>
-                        <i class="fas fa-shield-alt"></i>
+                        <img src="{{ url_for('static', filename='images/TRIDENT_logo.png') }}" alt="TRIDENT" class="brand-logo-img">
                         Emergency Operations Center
                     </h1>
                 </div>
@@ -1557,6 +1559,38 @@
                 <div class="telemetry-status">
                     <span class="telemetry-dot" id="telemetryDot"></span>
                     <span id="telemetryConnectionStatus">Waiting for device...</span>
+                </div>
+            </div>
+
+            <!-- AI Vitality Risk Radar Widget -->
+            <div class="ai-risk-radar risk-low" id="aiRiskRadar">
+                <div class="ai-risk-radar-header">
+                    <div class="ai-risk-radar-title">
+                        <i class="fas fa-brain"></i>
+                        AI Vitality Risk Radar
+                    </div>
+                    <span style="color: #64748b; font-size: 0.75rem;" id="aiRiskMode">Mode: Initializing...</span>
+                </div>
+                <div class="ai-risk-radar-body">
+                    <div class="risk-score-ring">
+                        <svg viewBox="0 0 80 80">
+                            <circle class="ring-bg" cx="40" cy="40" r="34"></circle>
+                            <circle class="ring-fill" cx="40" cy="40" r="34"
+                                    stroke-dasharray="213.63"
+                                    stroke-dashoffset="213.63"
+                                    id="riskRingFill"></circle>
+                        </svg>
+                        <div class="risk-score-value" id="riskScoreValue">—</div>
+                    </div>
+                    <div class="risk-info">
+                        <div class="health-state-badge state-stable" id="healthStateBadge">
+                            <i class="fas fa-shield-alt"></i>
+                            <span id="healthStateText">STABLE</span>
+                        </div>
+                        <p class="risk-description" id="riskDescription">
+                            Awaiting wearable telemetry data for AI health state classification...
+                        </p>
+                    </div>
                 </div>
             </div>
 

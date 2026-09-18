@@ -14,6 +14,15 @@ import torch
 import torch.nn as nn
 from sklearn.preprocessing import MinMaxScaler
 
+# Wearable ML Health Predictor
+try:
+    from src.ml.wearable_model import WearableHealthPredictor
+except ImportError:
+    try:
+        from ml.wearable_model import WearableHealthPredictor
+    except ImportError:
+        WearableHealthPredictor = None
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -59,6 +68,9 @@ wearable_command_queue = {}
 
 # Track latest wearable heartbeat timestamps for online/offline detection
 wearable_last_seen = {}
+
+# Wearable ML Health Predictor (8-state disaster trauma classifier)
+wearable_health_predictor = None
 
 def init_database():
     """Initialize the SQLite database with required tables"""
@@ -228,7 +240,10 @@ def init_database():
             gsr_raw REAL DEFAULT 0.0,
             gsr_norm REAL DEFAULT 0.0,
             stress_level TEXT DEFAULT 'Unknown',
-            gsr_baseline REAL DEFAULT 0.0
+            gsr_baseline REAL DEFAULT 0.0,
+            ml_risk_score REAL DEFAULT 0.0,
+            ml_health_state TEXT DEFAULT 'STABLE',
+            ml_mode TEXT DEFAULT 'heuristic'
         )
     ''')
     
@@ -237,38 +252,31 @@ def init_database():
     logger.info("Database initialized successfully")
 
 def init_ai_model():
-    """Initialize the AI weather prediction model"""
-    global weather_model, weather_scaler, weather_data
+    """Initialize the AI weather prediction model and wearable health predictor."""
+    global weather_model, weather_scaler, weather_data, wearable_health_predictor
     
+    # ── Weather LSTM Model ──
     try:
-        # Load weather data
         weather_data = pd.read_csv('data/raw/weather/chennai_historical.csv')
         weather_data['time'] = pd.to_datetime(weather_data['time'])
         weather_data = weather_data.sort_values('time')
         
-        # Prepare data for temperature prediction
         temp_data = weather_data['temp'].values.reshape(-1, 1)
         
-        # Initialize scaler
         weather_scaler = MinMaxScaler()
         temp_scaled = weather_scaler.fit_transform(temp_data)
         
-        # Initialize model
         weather_model = WeatherLSTM(input_size=1, hidden_size=50, num_layers=2, output_size=1)
         
-        # Load trained model if available
         model_path = 'data/models/weather_lstm.pth'
         if os.path.exists(model_path):
             try:
-                # Try to load the model with the expected structure
                 model_data = torch.load(model_path, map_location='cpu')
                 
-                # Check if it's a dictionary with model_state_dict key
                 if isinstance(model_data, dict) and 'model_state_dict' in model_data:
                     weather_model.load_state_dict(model_data['model_state_dict'])
                     logger.info("AI weather model loaded successfully from checkpoint")
                 else:
-                    # Try direct loading
                     weather_model.load_state_dict(model_data)
                     logger.info("AI weather model loaded successfully")
                     
@@ -284,6 +292,20 @@ def init_ai_model():
         weather_model = None
         weather_scaler = None
         weather_data = None
+    
+    # ── Wearable Health ML Predictor (8-State Trauma Classifier) ──
+    try:
+        if WearableHealthPredictor is not None:
+            wearable_health_predictor = WearableHealthPredictor()
+            status = wearable_health_predictor.get_status()
+            logger.info(f"🩺 WearableHealthPredictor initialized — mode: {status['mode']}, "
+                        f"features: {status['feature_count']}, states: {len(status['health_states'])}")
+        else:
+            logger.warning("⚠️ WearableHealthPredictor class not available — ML inference disabled")
+            wearable_health_predictor = None
+    except Exception as e:
+        logger.error(f"❌ Error initializing WearableHealthPredictor: {e}")
+        wearable_health_predictor = None
 
 def predict_temperature(hours_ahead=24):
     """Predict temperature for the next N hours"""
@@ -532,6 +554,14 @@ def calculate_priority(data: Dict, wearable_data: Optional[Dict] = None) -> int:
         # Sensor disconnect / No Finger → +1 (indicates potential unconsciousness)
         if vitals_cat == 'No Finger' and wearable_data.get('fall_detected', False):
             priority += 1
+        
+        # ── ML Risk Score Boost (from WearableHealthPredictor) ──
+        ml_risk = wearable_data.get('ml_risk_score', 0.0)
+        ml_state = wearable_data.get('ml_health_state', 'STABLE')
+        if ml_risk >= 0.75 or ml_state in ('CARDIAC_ARREST', 'HEMORRHAGIC_SHOCK', 'ASPIRATION_HYPOXIA'):
+            priority += 2  # Critical ML-detected trauma state
+        elif ml_risk >= 0.50 or ml_state in ('CONCUSSIVE_STASIS', 'CRUSH_ENTRAPMENT'):
+            priority += 1  # High-acuity ML-detected state
     
     return min(priority, 5)  # Max priority 5
 
@@ -2006,13 +2036,53 @@ def ingest_wearable_telemetry():
         conn.commit()
         conn.close()
         
+        # ── ML Health Prediction (8-State Trauma Classifier) ──
+        ml_result = {'ml_health_state': 'STABLE', 'ml_state_id': 0, 'ml_risk_score': 0.0, 'ml_mode': 'disabled'}
+        if wearable_health_predictor is not None:
+            try:
+                raw_telemetry = {
+                    'bpm': vitals.get('bpm', 0.0),
+                    'spo2': vitals.get('spo2', 0.0),
+                    'acc_mag': fall.get('acc_mag', 0.0),
+                    'gyro_mag': fall.get('gyro_mag', 0.0),
+                    'gsr_norm': stress.get('gsr_norm', 0.0),
+                    'fall_detected': fall.get('fall_detected', False),
+                    'vitals_cat': vitals.get('category', 'Unknown'),
+                    'lat': gps.get('lat', 0.0),
+                    'lng': gps.get('lng', 0.0),
+                }
+                ml_result = wearable_health_predictor.predict(device_id, raw_telemetry)
+            except Exception as ml_err:
+                logger.error(f"ML prediction error for {device_id}: {ml_err}")
+        
+        # Update ML columns in the most recent record
+        try:
+            conn2 = sqlite3.connect(DATABASE)
+            cursor2 = conn2.cursor()
+            cursor2.execute('''
+                UPDATE wearable_telemetry
+                SET ml_risk_score = ?, ml_health_state = ?, ml_mode = ?
+                WHERE device_id = ? AND id = (SELECT MAX(id) FROM wearable_telemetry WHERE device_id = ?)
+            ''', (
+                ml_result.get('ml_risk_score', 0.0),
+                ml_result.get('ml_health_state', 'STABLE'),
+                ml_result.get('ml_mode', 'heuristic'),
+                device_id, device_id
+            ))
+            conn2.commit()
+            conn2.close()
+        except Exception as db_err:
+            logger.error(f"ML DB update error: {db_err}")
+        
         # Check for emergency conditions and log
         is_emergency = fall.get('fall_detected', False) or gps.get('breached', False)
         vitals_critical = vitals.get('category', '') == 'Critical'
+        ml_critical = ml_result.get('ml_risk_score', 0) >= 0.75
         
-        if is_emergency or vitals_critical:
+        if is_emergency or vitals_critical or ml_critical:
             logger.warning(f"🚨 Wearable {device_id} emergency: fall={fall.get('fall_detected')}, "
-                           f"geo_breach={gps.get('breached')}, vitals={vitals.get('category')}")
+                           f"geo_breach={gps.get('breached')}, vitals={vitals.get('category')}, "
+                           f"ML={ml_result.get('ml_health_state')} (risk={ml_result.get('ml_risk_score', 0):.2f})")
         
         # Pop pending commands for this device
         pending_commands = wearable_command_queue.pop(device_id, [])
@@ -2020,6 +2090,9 @@ def ingest_wearable_telemetry():
         return jsonify({
             'success': True,
             'commands': pending_commands,
+            'ml_health_state': ml_result.get('ml_health_state', 'STABLE'),
+            'ml_risk_score': ml_result.get('ml_risk_score', 0.0),
+            'ml_mode': ml_result.get('ml_mode', 'disabled'),
             'timestamp': datetime.now().isoformat()
         })
         

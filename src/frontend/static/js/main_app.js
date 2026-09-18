@@ -474,8 +474,12 @@ function calculatePriority(data) {
 }
 
 // Close modal
-function closeModal() {
-    successModal.style.display = 'none';
+function closeModal(modalId = 'successModal') {
+    const targetId = modalId || 'successModal';
+    const modal = document.getElementById(targetId);
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 // Show notification

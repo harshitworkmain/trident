@@ -412,8 +412,12 @@ async function updateStatus(event) {
 }
 
 // Close modal
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
+function closeModal(modalId = 'successModal') {
+    const targetId = modalId || 'successModal';
+    const modal = document.getElementById(targetId);
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 // Refresh functions
@@ -567,6 +571,92 @@ function updateTelemetryCards(d) {
         else if (lvl === 'Low') { stressBadge.className = 'telem-ok'; stressBadge.textContent = 'Low'; }
         else { stressBadge.className = 'telem-warn'; stressBadge.textContent = lvl; }
     }
+    
+    // Card 7: AI Vitality Risk Radar
+    updateAIRiskRadar(d);
+}
+
+function updateAIRiskRadar(d) {
+    const riskScore = d.ml_risk_score || 0.0;
+    const healthState = d.ml_health_state || 'STABLE';
+    const mlMode = d.ml_mode || 'disabled';
+    
+    // Update risk score ring
+    const ringFill = document.getElementById('riskRingFill');
+    const scoreValue = document.getElementById('riskScoreValue');
+    const radar = document.getElementById('aiRiskRadar');
+    const modeBadge = document.getElementById('aiRiskMode');
+    const stateBadge = document.getElementById('healthStateBadge');
+    const stateText = document.getElementById('healthStateText');
+    const descEl = document.getElementById('riskDescription');
+    
+    if (!ringFill || !scoreValue) return;
+    
+    // Animate ring fill (circumference = 2 * pi * 34 ≈ 213.63)
+    const circumference = 213.63;
+    const offset = circumference * (1 - riskScore);
+    ringFill.style.strokeDashoffset = offset;
+    
+    // Score percentage text
+    scoreValue.textContent = Math.round(riskScore * 100) + '%';
+    
+    // Mode label
+    if (modeBadge) {
+        const modeLabel = mlMode === 'xgboost' ? 'XGBoost ML' : mlMode === 'heuristic' ? 'Heuristic' : 'Disabled';
+        modeBadge.textContent = 'Mode: ' + modeLabel;
+    }
+    
+    // Determine severity class
+    let severityClass = 'risk-low';
+    if (riskScore >= 0.75) severityClass = 'risk-critical';
+    else if (riskScore >= 0.50) severityClass = 'risk-high';
+    else if (riskScore >= 0.25) severityClass = 'risk-moderate';
+    
+    if (radar) {
+        radar.className = 'ai-risk-radar ' + severityClass;
+    }
+    
+    // Health state badge
+    const stateClassMap = {
+        'STABLE': 'state-stable',
+        'ELEVATED_STRESS': 'state-elevated-stress',
+        'HYPOTHERMIA_RISK': 'state-hypothermia-risk',
+        'ASPIRATION_HYPOXIA': 'state-aspiration-hypoxia',
+        'HEMORRHAGIC_SHOCK': 'state-hemorrhagic-shock',
+        'CONCUSSIVE_STASIS': 'state-concussive-stasis',
+        'CRUSH_ENTRAPMENT': 'state-crush-entrapment',
+        'CARDIAC_ARREST': 'state-cardiac-arrest',
+    };
+    
+    const stateIconMap = {
+        'STABLE': 'fa-shield-alt',
+        'ELEVATED_STRESS': 'fa-bolt',
+        'HYPOTHERMIA_RISK': 'fa-snowflake',
+        'ASPIRATION_HYPOXIA': 'fa-lungs',
+        'HEMORRHAGIC_SHOCK': 'fa-tint',
+        'CONCUSSIVE_STASIS': 'fa-head-side-virus',
+        'CRUSH_ENTRAPMENT': 'fa-mountain',
+        'CARDIAC_ARREST': 'fa-heartbeat',
+    };
+    
+    const stateDescMap = {
+        'STABLE': 'All vitals within nominal parameters. No trauma indicators detected.',
+        'ELEVATED_STRESS': 'Elevated autonomic stress response detected. GSR and heart rate above baseline thresholds.',
+        'HYPOTHERMIA_RISK': 'Progressive bradycardia and falling SpO₂ consistent with cold water immersion.',
+        'ASPIRATION_HYPOXIA': 'Rapid oxygen desaturation detected without high-impact event. Possible aspiration or drowning.',
+        'HEMORRHAGIC_SHOCK': 'Tachycardia with decaying pulse amplitude. Consistent with ATLS Class III/IV blood loss.',
+        'CONCUSSIVE_STASIS': 'High-g kinetic impact followed by complete motion stasis. Possible head or spinal trauma.',
+        'CRUSH_ENTRAPMENT': 'Prolonged zero-motion stasis with sustained stress and no GPS displacement. Possible entrapment.',
+        'CARDIAC_ARREST': 'Extreme arrhythmia or pulselessness detected. Immediate intervention required.',
+    };
+    
+    if (stateBadge) {
+        stateBadge.className = 'health-state-badge ' + (stateClassMap[healthState] || 'state-stable');
+        const icon = stateBadge.querySelector('i');
+        if (icon) icon.className = 'fas ' + (stateIconMap[healthState] || 'fa-shield-alt');
+    }
+    if (stateText) stateText.textContent = healthState.replace(/_/g, ' ');
+    if (descEl) descEl.textContent = stateDescMap[healthState] || 'Classifying health state...';
 }
 
 function updateTelemetryConnectionStatus(isOnline, deviceId) {
