@@ -81,17 +81,58 @@ class DatasetFusionSynthesizer:
 
     # ─── Per-Dataset Parsers ─────────────────────────────────────────────
 
+    @staticmethod
+    def _read_e4_csv(filepath: Path) -> Tuple[float, float, np.ndarray]:
+        """Read Empatica E4 CSV file format.
+
+        E4 CSV format:
+            Line 1: Unix timestamp (start time)
+            Line 2: Sampling rate (Hz)
+            Line 3+: Data values (1 col for HR/EDA/TEMP, 3 cols for ACC)
+
+        Returns:
+            (start_timestamp, sampling_rate, data_array)
+        """
+        with open(filepath, 'r') as f:
+            lines = f.readlines()
+
+        if len(lines) < 3:
+            return 0.0, 0.0, np.array([])
+
+        # Parse header
+        header_parts = lines[0].strip().split(',')
+        start_ts = float(header_parts[0])
+        rate_parts = lines[1].strip().split(',')
+        sampling_rate = float(rate_parts[0])
+
+        # Parse data
+        data_lines = lines[2:]
+        if ',' in data_lines[0]:
+            # Multi-column (ACC: x,y,z)
+            data = np.array(
+                [[float(v) for v in line.strip().split(',')] for line in data_lines if line.strip()],
+                dtype=np.float32
+            )
+        else:
+            # Single column
+            data = np.array(
+                [float(line.strip()) for line in data_lines if line.strip()],
+                dtype=np.float32
+            )
+
+        return start_ts, sampling_rate, data
+
     def parse_wesad(self) -> pd.DataFrame:
-        """Parse WESAD dataset for stress/baseline physiological signals.
+        """Parse WESAD dataset using lightweight E4 CSV files (~6MB per subject).
 
-        WESAD provides wrist-worn Empatica E4 signals: BVP (64Hz), EDA (4Hz),
-        TEMP (4Hz), ACC (32Hz) plus chest RespiBAN: ECG, EDA, EMG, TEMP, ACC, RESP.
+        Uses the unzipped e4_data/ subdirectories with HR.csv, EDA.csv, ACC.csv,
+        BVP.csv instead of the massive .pkl files (~930MB each) to avoid OOM
+        on the 8GB RAM development machine.
 
-        Maps WESAD labels:
-            1 (baseline)    → STABLE
-            2 (stress)      → ELEVATED_STRESS
-            3 (amusement)   → STABLE
-            4 (meditation)  → STABLE
+        Labeling strategy: WESAD E4 CSVs don't contain ground-truth labels,
+        so we use HR + EDA thresholding to identify stress vs baseline periods.
+        Windows with HR > 90th percentile AND EDA > 75th percentile for that
+        subject are labeled ELEVATED_STRESS; all others are STABLE.
         """
         wesad_dir = self.data_root / 'WESAD'
         records = []
@@ -100,122 +141,138 @@ class DatasetFusionSynthesizer:
             logger.warning(f"WESAD directory not found at {wesad_dir}")
             return pd.DataFrame()
 
-        try:
-            import pickle
+        rng = np.random.default_rng(42)
 
-            for subject_dir in sorted(wesad_dir.iterdir()):
-                if not subject_dir.is_dir() or not subject_dir.name.startswith('S'):
+        for subject_dir in sorted(wesad_dir.iterdir()):
+            if not subject_dir.is_dir() or not subject_dir.name.startswith('S'):
+                continue
+
+            e4_dir = subject_dir / 'e4_data'
+            if not e4_dir.exists():
+                logger.warning(f"WESAD {subject_dir.name}: e4_data/ not found, skipping")
+                continue
+
+            subject_id = subject_dir.name
+            logger.info(f"Parsing WESAD subject {subject_id} from E4 CSVs...")
+
+            try:
+                # Read E4 CSV files
+                hr_file = e4_dir / 'HR.csv'
+                eda_file = e4_dir / 'EDA.csv'
+                acc_file = e4_dir / 'ACC.csv'
+                bvp_file = e4_dir / 'BVP.csv'
+
+                if not hr_file.exists() or not eda_file.exists():
+                    logger.warning(f"WESAD {subject_id}: Missing HR.csv or EDA.csv")
                     continue
 
-                pkl_file = subject_dir / f'{subject_dir.name}.pkl'
-                if not pkl_file.exists():
+                hr_ts, hr_hz, hr_data = self._read_e4_csv(hr_file)
+                eda_ts, eda_hz, eda_data = self._read_e4_csv(eda_file)
+
+                if len(hr_data) < 30 or len(eda_data) < 10:
                     continue
 
-                subject_id = subject_dir.name
-                logger.info(f"Parsing WESAD subject {subject_id}...")
+                # Read ACC if available
+                acc_data = None
+                acc_hz = 32.0
+                if acc_file.exists():
+                    _, acc_hz, acc_data = self._read_e4_csv(acc_file)
 
-                with open(pkl_file, 'rb') as f:
-                    data = pickle.load(f, encoding='latin1')
+                # Read BVP if available (for BPM estimation)
+                bvp_data = None
+                bvp_hz = 64.0
+                if bvp_file.exists():
+                    _, bvp_hz, bvp_data = self._read_e4_csv(bvp_file)
 
-                labels = data['label'].flatten()
-                wrist = data['signal']['wrist']
+                # HR.csv is already at 1 Hz — each value is 1 second
+                # Compute subject-level stress thresholds
+                hr_p90 = np.percentile(hr_data[hr_data > 0], 90) if np.any(hr_data > 0) else 100.0
+                eda_p75 = np.percentile(eda_data[eda_data > 0], 75) if np.any(eda_data > 0) else 0.5
 
-                # Extract wrist signals
-                bvp = wrist['BVP'].flatten()     # 64 Hz → BPM proxy
-                eda = wrist['EDA'].flatten()      # 4 Hz → GSR
-                acc = wrist['ACC']                # 32 Hz, shape (N, 3)
+                # Sliding windows over HR signal (1 Hz, so 15 samples = 15 seconds)
+                hr_win_size = int(WINDOW_SECONDS * hr_hz)  # HR at 1Hz -> 15 samples
+                hr_stride = int(5 * hr_hz)  # 5-second stride
 
-                # Resample all to TARGET_HZ via linear interpolation
-                n_samples_target = len(labels)  # labels at 700Hz, we use label count
+                for start in range(0, len(hr_data) - hr_win_size, hr_stride):
+                    end = start + hr_win_size
+                    hr_win = hr_data[start:end]
 
-                # For each window of labels, extract features
-                label_hz = 700  # WESAD label sampling rate
-                window_labels = WINDOW_SECONDS * label_hz
-
-                for start in range(0, len(labels) - window_labels, STRIDE_SAMPLES * (label_hz // TARGET_HZ)):
-                    end = start + window_labels
-                    win_labels = labels[start:end]
-
-                    # Determine dominant label in window
-                    unique, counts = np.unique(win_labels[win_labels > 0], return_counts=True)
-                    if len(unique) == 0:
+                    # Skip windows with mostly zero HR
+                    valid_hr = hr_win[hr_win > 0]
+                    if len(valid_hr) < hr_win_size * 0.5:
                         continue
-                    dominant_label = unique[np.argmax(counts)]
 
-                    # Map WESAD label to our taxonomy
-                    if dominant_label == 2:  # stress
+                    bpm_mean = float(np.mean(valid_hr))
+                    bpm_std = float(np.std(valid_hr))
+                    bpm_current = float(valid_hr[-1]) if len(valid_hr) > 0 else bpm_mean
+
+                    # Map EDA window (4 Hz)
+                    eda_ratio = eda_hz / hr_hz
+                    eda_start = int(start * eda_ratio)
+                    eda_end = int(end * eda_ratio)
+                    eda_win = eda_data[eda_start:min(eda_end, len(eda_data))]
+
+                    if len(eda_win) < 2:
+                        continue
+
+                    gsr_norm = float(np.mean(eda_win))
+                    gsr_max = max(float(np.max(eda_win)), EPSILON)
+                    gsr_stress = min(gsr_norm / (gsr_max + EPSILON), 1.0)
+                    gsr_slope = float(eda_win[-1] - eda_win[0]) / (len(eda_win) / eda_hz + EPSILON)
+
+                    # ACC window (32 Hz)
+                    acc_max_val = 1.0
+                    motion_var = 0.1
+                    if acc_data is not None and len(acc_data) > 0:
+                        acc_ratio = acc_hz / hr_hz
+                        acc_start_idx = int(start * acc_ratio)
+                        acc_end_idx = int(end * acc_ratio)
+                        acc_win = acc_data[acc_start_idx:min(acc_end_idx, len(acc_data))]
+
+                        if len(acc_win) > 0 and acc_win.ndim == 2 and acc_win.shape[1] >= 3:
+                            acc_mag = np.sqrt(np.sum(acc_win[:, :3]**2, axis=1)) / 64.0  # E4 ACC in 1/64g units
+                            acc_max_val = float(np.max(acc_mag))
+                            motion_var = float(np.var(acc_mag))
+
+                    # Stress labeling via HR + EDA thresholds
+                    if bpm_mean > hr_p90 and gsr_norm > eda_p75:
                         health_state = STATE_LABELS['ELEVATED_STRESS']
                     else:
                         health_state = STATE_LABELS['STABLE']
 
-                    # Extract signal windows (approximate index mapping)
-                    bvp_start = int(start * (64 / label_hz))
-                    bvp_end = int(end * (64 / label_hz))
-                    eda_start = int(start * (4 / label_hz))
-                    eda_end = int(end * (4 / label_hz))
-                    acc_start = int(start * (32 / label_hz))
-                    acc_end = int(end * (32 / label_hz))
-
-                    bvp_win = bvp[bvp_start:bvp_end] if bvp_end <= len(bvp) else bvp[bvp_start:]
-                    eda_win = eda[eda_start:eda_end] if eda_end <= len(eda) else eda[eda_start:]
-                    acc_win = acc[acc_start:acc_end] if acc_end <= len(acc) else acc[acc_start:]
-
-                    if len(bvp_win) < 10 or len(eda_win) < 2:
-                        continue
-
-                    # Compute features from raw signals
-                    # BPM from BVP peak intervals (simplified)
-                    bpm_est = self._estimate_bpm_from_bvp(bvp_win, fs=64)
-                    bpm_mean = float(np.nanmean(bpm_est)) if len(bpm_est) > 0 else 75.0
-                    bpm_std = float(np.nanstd(bpm_est)) if len(bpm_est) > 1 else 0.0
-
-                    # GSR normalized
-                    gsr_norm = float(np.mean(eda_win))
-                    gsr_max = max(float(np.max(eda_win)), EPSILON)
-                    gsr_stress = min(gsr_norm / (gsr_max + EPSILON), 1.0)
-                    gsr_slope = float(eda_win[-1] - eda_win[0]) / (len(eda_win) + EPSILON)
-
-                    # Acceleration magnitude
-                    if len(acc_win) > 0:
-                        acc_mag = np.sqrt(np.sum(acc_win**2, axis=1)) / 9.81
-                        acc_max = float(np.max(acc_mag))
-                        motion_var = float(np.var(acc_mag))
-                    else:
-                        acc_max = 1.0
-                        motion_var = 0.1
-
                     records.append({
                         'subject_id': subject_id,
                         'source': 'WESAD',
-                        'bpm_current': bpm_mean,
+                        'bpm_current': bpm_current,
                         'bpm_mean_15s': bpm_mean,
                         'bpm_std_15s': bpm_std,
                         'pulse_amp_decay': 1.0,
                         'spo2_current': 97.0,  # WESAD doesn't have SpO2
                         'spo2_slope': 0.0,
-                        'acc_mag_max_3s': acc_max,
+                        'acc_mag_max_3s': acc_max_val,
                         'motion_stasis': motion_var,
                         'gsr_stress_norm': gsr_stress,
                         'gsr_slope': gsr_slope,
                         'fall_flag': 0.0,
-                        'gps_displacement_15s': np.random.uniform(0.5, 5.0),
+                        'gps_displacement_15s': float(rng.uniform(0.5, 5.0)),
                         'health_state': health_state,
                     })
 
-            logger.info(f"WESAD: Extracted {len(records)} windows")
+            except Exception as e:
+                logger.error(f"Error parsing WESAD subject {subject_id}: {e}")
+                continue
 
-        except Exception as e:
-            logger.error(f"Error parsing WESAD: {e}")
-
+        logger.info(f"WESAD: Extracted {len(records)} windows from E4 CSVs")
         return pd.DataFrame(records)
 
     def parse_hifd(self) -> pd.DataFrame:
         """Parse HR+IMU Fall Detection dataset for impact/stasis patterns.
 
+        Directory structure: subject_XX/fall/*.mat and subject_XX/non-fall/*.mat
+
         Maps activities:
-            Fall events → CONCUSSIVE_STASIS
-            Post-fall stasis → CRUSH_ENTRAPMENT (if prolonged)
-            ADL activities → STABLE
+            fall/*.mat events → CONCUSSIVE_STASIS
+            non-fall/*.mat activities → STABLE
         """
         hifd_dir = self.data_root / 'HR_IMU_falldetection_dataset-master'
         records = []
@@ -226,94 +283,108 @@ class DatasetFusionSynthesizer:
 
         try:
             import scipy.io as sio
+        except ImportError:
+            logger.warning("scipy not installed — skipping HIFD parsing.")
+            return pd.DataFrame()
 
-            data_dir = hifd_dir / 'data'
-            if not data_dir.exists():
-                data_dir = hifd_dir
+        rng = np.random.default_rng(42)
 
-            for mat_file in sorted(data_dir.glob('*.mat')):
-                subject_id = mat_file.stem
-                logger.info(f"Parsing HIFD subject {subject_id}...")
+        for subject_dir in sorted(hifd_dir.iterdir()):
+            if not subject_dir.is_dir() or not subject_dir.name.startswith('subject_'):
+                continue
 
-                try:
-                    mat = sio.loadmat(str(mat_file))
-                except Exception:
+            subject_id = subject_dir.name
+            logger.info(f"Parsing HIFD {subject_id}...")
+
+            # Process fall/ and non-fall/ subdirectories
+            for activity_dir in ['fall', 'non-fall']:
+                activity_path = subject_dir / activity_dir
+                if not activity_path.exists():
                     continue
 
-                # HIFD .mat structure varies; try common key patterns
-                for key in mat:
-                    if key.startswith('_') or key in ('__header__', '__version__', '__globals__'):
+                is_fall_dir = (activity_dir == 'fall')
+
+                for mat_file in sorted(activity_path.glob('*.mat')):
+                    try:
+                        mat = sio.loadmat(str(mat_file))
+                    except Exception:
                         continue
 
-                    signal = mat[key]
-                    if not isinstance(signal, np.ndarray) or signal.ndim < 2:
-                        continue
+                    # HIFD .mat structure: find the data array
+                    for key in mat:
+                        if key.startswith('_') or key in ('__header__', '__version__', '__globals__'):
+                            continue
 
-                    # Extract acceleration columns (typically cols 0-2)
-                    n_cols = signal.shape[1]
-                    if n_cols >= 4:
-                        acc_xyz = signal[:, :3].astype(np.float32)
-                        hr_col = signal[:, 3].astype(np.float32) if n_cols > 3 else None
-                    else:
-                        continue
+                        signal = mat[key]
+                        if not isinstance(signal, np.ndarray) or signal.ndim < 2:
+                            continue
 
-                    acc_mag = np.sqrt(np.sum(acc_xyz**2, axis=1))
-
-                    # Detect fall events (threshold-based)
-                    is_fall = acc_mag > 3.0 * 9.81  # > 3g threshold
-
-                    # Sliding window extraction
-                    fs = 50  # HIFD sampling rate
-                    win_size = WINDOW_SECONDS * fs
-                    stride = 5 * fs
-
-                    for start in range(0, len(acc_mag) - win_size, stride):
-                        end = start + win_size
-                        win_acc = acc_mag[start:end]
-                        win_fall = is_fall[start:end]
-
-                        has_fall = np.any(win_fall)
-                        acc_max = float(np.max(win_acc)) / 9.81
-                        motion_var = float(np.var(win_acc / 9.81))
-
-                        # HR from column if available
-                        bpm = 75.0
-                        if hr_col is not None:
-                            hr_win = hr_col[start:end]
-                            valid_hr = hr_win[hr_win > 0]
-                            if len(valid_hr) > 0:
-                                bpm = float(np.mean(valid_hr))
-
-                        if has_fall and motion_var < 0.05:
-                            health_state = STATE_LABELS['CONCUSSIVE_STASIS']
-                        elif has_fall:
-                            health_state = STATE_LABELS['CONCUSSIVE_STASIS']
+                        n_cols = signal.shape[1]
+                        if n_cols >= 3:
+                            acc_xyz = signal[:, :3].astype(np.float32)
+                            hr_col = signal[:, 3].astype(np.float32) if n_cols > 3 else None
                         else:
-                            health_state = STATE_LABELS['STABLE']
+                            continue
 
-                        records.append({
-                            'subject_id': f'HIFD_{subject_id}',
-                            'source': 'HIFD',
-                            'bpm_current': bpm,
-                            'bpm_mean_15s': bpm,
-                            'bpm_std_15s': float(np.std(hr_col[start:end])) if hr_col is not None else 5.0,
-                            'pulse_amp_decay': 1.0 if not has_fall else 0.7,
-                            'spo2_current': 97.0,
-                            'spo2_slope': 0.0,
-                            'acc_mag_max_3s': acc_max,
-                            'motion_stasis': motion_var,
-                            'gsr_stress_norm': 0.3 if not has_fall else 0.7,
-                            'gsr_slope': 0.0,
-                            'fall_flag': 1.0 if has_fall else 0.0,
-                            'gps_displacement_15s': 0.0 if has_fall else np.random.uniform(1.0, 5.0),
-                            'health_state': health_state,
-                        })
+                        acc_mag = np.sqrt(np.sum(acc_xyz**2, axis=1))
 
-            logger.info(f"HIFD: Extracted {len(records)} windows")
+                        # Detect impact peaks (threshold-based)
+                        is_impact = acc_mag > 3.0 * 9.81  # > 3g threshold
 
-        except Exception as e:
-            logger.error(f"Error parsing HIFD: {e}")
+                        # Sliding window extraction
+                        fs = 50  # HIFD sampling rate
+                        win_size = WINDOW_SECONDS * fs
+                        stride = 5 * fs
 
+                        for start in range(0, max(1, len(acc_mag) - win_size), stride):
+                            end = min(start + win_size, len(acc_mag))
+                            if end - start < win_size // 2:
+                                continue
+
+                            win_acc = acc_mag[start:end]
+                            win_impact = is_impact[start:end]
+
+                            has_impact = bool(np.any(win_impact))
+                            acc_max = float(np.max(win_acc)) / 9.81
+                            motion_var = float(np.var(win_acc / 9.81))
+
+                            # HR from column if available
+                            bpm = 75.0
+                            bpm_std = 5.0
+                            if hr_col is not None and len(hr_col) > end:
+                                hr_win = hr_col[start:end]
+                                valid_hr = hr_win[hr_win > 0]
+                                if len(valid_hr) > 0:
+                                    bpm = float(np.mean(valid_hr))
+                                    bpm_std = float(np.std(valid_hr))
+
+                            if is_fall_dir:
+                                if motion_var < 0.02:
+                                    health_state = STATE_LABELS['CRUSH_ENTRAPMENT']
+                                else:
+                                    health_state = STATE_LABELS['CONCUSSIVE_STASIS']
+                            else:
+                                health_state = STATE_LABELS['STABLE']
+
+                            records.append({
+                                'subject_id': f'HIFD_{subject_id}',
+                                'source': 'HIFD',
+                                'bpm_current': bpm,
+                                'bpm_mean_15s': bpm,
+                                'bpm_std_15s': bpm_std,
+                                'pulse_amp_decay': 1.0 if not is_fall_dir else 0.7,
+                                'spo2_current': 97.0,
+                                'spo2_slope': 0.0,
+                                'acc_mag_max_3s': acc_max,
+                                'motion_stasis': motion_var,
+                                'gsr_stress_norm': 0.3 if not is_fall_dir else 0.7,
+                                'gsr_slope': 0.0,
+                                'fall_flag': 1.0 if is_fall_dir else 0.0,
+                                'gps_displacement_15s': 0.0 if is_fall_dir else float(rng.uniform(1.0, 5.0)),
+                                'health_state': health_state,
+                            })
+
+        logger.info(f"HIFD: Extracted {len(records)} windows")
         return pd.DataFrame(records)
 
     def parse_mitbih(self) -> pd.DataFrame:
@@ -419,11 +490,12 @@ class DatasetFusionSynthesizer:
         return pd.DataFrame(records)
 
     def parse_ppg_dalia(self) -> pd.DataFrame:
-        """Parse PPG-DaLiA dataset for heart rate and activity features.
+        """Parse PPG-DaLiA dataset using lightweight E4 CSV files (~6MB per subject).
 
-        PPG-DaLiA provides wrist PPG + ACC from Empatica E4 during daily activities.
-        Maps to STABLE and generates synthetic degraded trajectories for
-        HEMORRHAGIC_SHOCK and HYPOTHERMIA_RISK.
+        Uses the unzipped e4_data/ subdirectories with HR.csv, EDA.csv, ACC.csv
+        instead of the massive .pkl files (~1.4GB each) to avoid OOM on 8GB RAM.
+
+        PPG-DaLiA daily-life activities are mapped to STABLE state.
         """
         ppg_dir = self.data_root / 'PPG_FieldStudy'
         records = []
@@ -432,67 +504,111 @@ class DatasetFusionSynthesizer:
             logger.warning(f"PPG_FieldStudy directory not found at {ppg_dir}")
             return pd.DataFrame()
 
-        try:
-            import pickle
+        rng = np.random.default_rng(43)  # Different seed from WESAD for variety
 
-            for pkl_file in sorted(ppg_dir.glob('S*/*.pkl')):
-                subject_id = pkl_file.parent.name
-                logger.info(f"Parsing PPG-DaLiA subject {subject_id}...")
+        for subject_dir in sorted(ppg_dir.iterdir()):
+            if not subject_dir.is_dir() or not subject_dir.name.startswith('S'):
+                continue
 
-                try:
-                    with open(pkl_file, 'rb') as f:
-                        data = pickle.load(f, encoding='latin1')
-                except Exception:
+            e4_dir = subject_dir / 'e4_data'
+            if not e4_dir.exists():
+                logger.warning(f"PPG-DaLiA {subject_dir.name}: e4_data/ not found, skipping")
+                continue
+
+            subject_id = subject_dir.name
+            logger.info(f"Parsing PPG-DaLiA subject {subject_id} from E4 CSVs...")
+
+            try:
+                hr_file = e4_dir / 'HR.csv'
+                acc_file = e4_dir / 'ACC.csv'
+                eda_file = e4_dir / 'EDA.csv'
+
+                if not hr_file.exists():
+                    logger.warning(f"PPG-DaLiA {subject_id}: Missing HR.csv")
                     continue
 
-                # PPG-DaLiA structure: dict with signal keys
-                if not isinstance(data, dict):
+                hr_ts, hr_hz, hr_data = self._read_e4_csv(hr_file)
+
+                if len(hr_data) < 30:
                     continue
 
-                # Extract available signals
-                ppg = data.get('signal', {}).get('wrist', {}).get('BVP', None)
-                acc = data.get('signal', {}).get('wrist', {}).get('ACC', None)
-                label = data.get('label', None)  # Ground truth HR
+                # Read ACC if available
+                acc_data = None
+                acc_hz = 32.0
+                if acc_file.exists():
+                    _, acc_hz, acc_data = self._read_e4_csv(acc_file)
 
-                if ppg is None or acc is None:
-                    continue
+                # Read EDA if available
+                eda_data = None
+                eda_hz = 4.0
+                if eda_file.exists():
+                    _, eda_hz, eda_data = self._read_e4_csv(eda_file)
 
-                ppg = ppg.flatten() if hasattr(ppg, 'flatten') else np.array(ppg).flatten()
+                # Sliding windows over HR (1 Hz)
+                hr_win_size = int(WINDOW_SECONDS * hr_hz)
+                hr_stride = int(5 * hr_hz)
 
-                # Compute features from windows
-                fs_ppg = 64  # BVP at 64 Hz
-                win_ppg = WINDOW_SECONDS * fs_ppg
+                for start in range(0, len(hr_data) - hr_win_size, hr_stride):
+                    end = start + hr_win_size
+                    hr_win = hr_data[start:end]
 
-                for start in range(0, len(ppg) - win_ppg, 5 * fs_ppg):
-                    end = start + win_ppg
-                    ppg_win = ppg[start:end]
+                    valid_hr = hr_win[hr_win > 0]
+                    if len(valid_hr) < hr_win_size * 0.5:
+                        continue
 
-                    bpm_est = self._estimate_bpm_from_bvp(ppg_win, fs=fs_ppg)
-                    bpm_mean = float(np.nanmean(bpm_est)) if len(bpm_est) > 0 else 75.0
+                    bpm_mean = float(np.mean(valid_hr))
+                    bpm_std = float(np.std(valid_hr))
+                    bpm_current = float(valid_hr[-1]) if len(valid_hr) > 0 else bpm_mean
+
+                    # ACC features
+                    acc_max_val = float(rng.uniform(0.8, 2.0))
+                    motion_var = float(rng.uniform(0.05, 0.5))
+                    if acc_data is not None and len(acc_data) > 0:
+                        acc_ratio = acc_hz / hr_hz
+                        acc_s = int(start * acc_ratio)
+                        acc_e = int(end * acc_ratio)
+                        acc_win = acc_data[acc_s:min(acc_e, len(acc_data))]
+                        if len(acc_win) > 0 and acc_win.ndim == 2 and acc_win.shape[1] >= 3:
+                            acc_mag = np.sqrt(np.sum(acc_win[:, :3]**2, axis=1)) / 64.0
+                            acc_max_val = float(np.max(acc_mag))
+                            motion_var = float(np.var(acc_mag))
+
+                    # EDA features
+                    gsr_stress = float(rng.uniform(0.1, 0.4))
+                    gsr_slope = 0.0
+                    if eda_data is not None and len(eda_data) > 0:
+                        eda_ratio = eda_hz / hr_hz
+                        eda_s = int(start * eda_ratio)
+                        eda_e = int(end * eda_ratio)
+                        eda_win = eda_data[eda_s:min(eda_e, len(eda_data))]
+                        if len(eda_win) > 2:
+                            gsr_max = max(float(np.max(eda_win)), EPSILON)
+                            gsr_stress = min(float(np.mean(eda_win)) / (gsr_max + EPSILON), 1.0)
+                            gsr_slope = float(eda_win[-1] - eda_win[0]) / (len(eda_win) / eda_hz + EPSILON)
 
                     records.append({
                         'subject_id': f'PPG_{subject_id}',
                         'source': 'PPG-DaLiA',
-                        'bpm_current': bpm_mean,
+                        'bpm_current': bpm_current,
                         'bpm_mean_15s': bpm_mean,
-                        'bpm_std_15s': float(np.nanstd(bpm_est)) if len(bpm_est) > 1 else 5.0,
+                        'bpm_std_15s': bpm_std,
                         'pulse_amp_decay': 1.0,
                         'spo2_current': 97.0,
                         'spo2_slope': 0.0,
-                        'acc_mag_max_3s': np.random.uniform(0.8, 2.0),
-                        'motion_stasis': np.random.uniform(0.05, 0.5),
-                        'gsr_stress_norm': np.random.uniform(0.1, 0.4),
-                        'gsr_slope': 0.0,
+                        'acc_mag_max_3s': acc_max_val,
+                        'motion_stasis': motion_var,
+                        'gsr_stress_norm': gsr_stress,
+                        'gsr_slope': gsr_slope,
                         'fall_flag': 0.0,
-                        'gps_displacement_15s': np.random.uniform(1.0, 10.0),
+                        'gps_displacement_15s': float(rng.uniform(1.0, 10.0)),
                         'health_state': STATE_LABELS['STABLE'],
                     })
 
-            logger.info(f"PPG-DaLiA: Extracted {len(records)} windows")
+            except Exception as e:
+                logger.error(f"Error parsing PPG-DaLiA subject {subject_id}: {e}")
+                continue
 
-        except Exception as e:
-            logger.error(f"Error parsing PPG-DaLiA: {e}")
-
+        logger.info(f"PPG-DaLiA: Extracted {len(records)} windows from E4 CSVs")
         return pd.DataFrame(records)
 
     # ─── Synthetic Trauma Trajectory Generation ──────────────────────────
@@ -502,13 +618,34 @@ class DatasetFusionSynthesizer:
 
         Creates clinically-grounded synthetic feature vectors for states that
         lack direct benchmark dataset representation:
-            - ASPIRATION_HYPOXIA  (mud aspiration / drowning)
-            - HEMORRHAGIC_SHOCK   (ATLS Class I-IV progression)
-            - HYPOTHERMIA_RISK    (cold water immersion)
-            - CRUSH_ENTRAPMENT    (rubble collapse)
+            - ASPIRATION_HYPOXIA   (mud aspiration / drowning)
+            - HEMORRHAGIC_SHOCK    (ATLS Class I-IV progression)
+            - HYPOTHERMIA_RISK     (cold water immersion)
+            - CONCUSSIVE_STASIS    (head/spinal impact)
+            - CRUSH_ENTRAPMENT     (rubble collapse)
         """
         records = []
         rng = np.random.default_rng(42)
+
+        # ── CONCUSSIVE_STASIS: High impact peak + immediate immobility ──
+        for i in range(n_per_state):
+            records.append({
+                'subject_id': f'SYN_CONC_{i}',
+                'source': 'SYNTHETIC',
+                'bpm_current': rng.uniform(50, 90),
+                'bpm_mean_15s': rng.uniform(55, 85),
+                'bpm_std_15s': rng.uniform(8, 25),
+                'pulse_amp_decay': rng.uniform(0.4, 0.8),
+                'spo2_current': rng.uniform(88, 96),
+                'spo2_slope': rng.uniform(-1.0, 0.0),
+                'acc_mag_max_3s': rng.uniform(4.5, 12.0),  # High impact peak
+                'motion_stasis': rng.uniform(0.0, 0.02),    # Near-zero post-impact
+                'gsr_stress_norm': rng.uniform(0.4, 0.8),
+                'gsr_slope': rng.uniform(-0.02, 0.05),
+                'fall_flag': 1.0,
+                'gps_displacement_15s': rng.uniform(0.0, 1.0),
+                'health_state': STATE_LABELS['CONCUSSIVE_STASIS'],
+            })
 
         # ── ASPIRATION_HYPOXIA: Rapid SpO2 collapse without impact ──
         for i in range(n_per_state):

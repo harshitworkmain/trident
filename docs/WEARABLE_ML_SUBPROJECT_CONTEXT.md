@@ -211,3 +211,88 @@ To strictly prevent **data leakage** across sliding time-series windows:
 | **2026-09-17** | Feature Engineering & Data Fusion Specs Detailed | Defined data unit harmonization (50Hz grid, `float32`), statistical window aggregations, 3 interaction features ($KSC, SSI, EIM$), missing value strategy (XGBoost native `NaN` default splits), and categorical encoding. | Ready for Claude Opus pre-training implementation & git push. |
 | **2026-09-18** | Full Implementation Complete (Commit `3a30fa4`) | Claude Opus executed all tasks: created 3 ML modules (`wearable_model.py`, `dataset_fusion_synthesizer.py`, `train_wearable_model.py`), integrated ML predictor into `main.py` backend, fixed SOS modal `closeModal` bug, added TRIDENT logo branding + favicon across 5 templates, built AI Vitality Risk Radar widget (HTML/JS/CSS). 15 files changed, +2042 lines. Pushed to `harshitworkmain/trident`. | Deployed to Render successfully. Heuristic fallback active. |
 | **2026-09-18** | PyTorch 2.6 Compat Fix (Commit `88208bf`) | Fixed `torch.load` weather LSTM error caused by PyTorch 2.6 changing `weights_only` default to `True`. Added `weights_only=False` since checkpoint is trusted. Remaining weather LSTM warning (`fc` vs `fc1`/`fc2` mismatch) is a pre-existing architecture issue, not in scope. | Model training deferred to high-RAM machine. |
+| **2026-09-22** | Benchmark Datasets Unzipping & Parsing Verification | Unzipped all 30 raw Empatica E4 ZIP files across WESAD (15 subjects `S2`-`S17`) and PPG-DaLiA (15 subjects `S1`-`S15`) into `e4_data/` containing `ACC.csv`, `BVP.csv`, `EDA.csv`, `HR.csv`, `TEMP.csv`, `info.txt`, `tags.csv`. Verified parser generating 9,827 sliding 15-second feature windows across 15 subjects. | Ready for Kaggle environment setup. |
+| **2026-09-24** | Kaggle API Setup & Dependency Integration | Authenticated user `harshitsingh7883` via API token `KGAT_1a0c1c09c7c07f0b8bb7969cd0776e75` in `~/.kaggle/kaggle.json`. Installed `kaggle` CLI v1.7.4.5 and `kagglehub` v1.0.2. Added `xgboost`, `lightgbm`, `joblib`, `wfdb`, `pyarrow`, `kaggle` to `requirements.txt` (commit `211c573`). | Defined multi-model tournament architecture. |
+| **2026-09-25** | Multi-Model Tournament & 3-Stage Pruning Blueprint | Designed 4-model tournament architecture (XGBoost, LightGBM, 1D-CNN, Deep MLP) with a deterministic 3-stage pruning protocol (10% screening -> 35-50% semifinal -> 100% final winner tuning) on Kaggle GPU/CPU. Established requirement to record all metrics across all stages in `docs/MODEL_TOURNAMENT_RESULTS.md`. | Pinned implementation tasks for Claude Opus execution. |
+
+---
+
+## 8. Multi-Model Kaggle Training Tournament & 3-Stage Pruning Protocol
+
+### A. Tournament Strategy Overview
+To establish the optimal model architecture for predicting 8 disaster trauma states from 15-second wearable physiological windows, TRIDENT uses a **multi-model competitive tournament** executed on Kaggle's free GPU/CPU compute infrastructure.
+
+#### Candidate Architectures
+1. **XGBoost Classifier**: Gradient Boosted Decision Trees with native `NaN` default split handling and fast tree structure optimization.
+2. **LightGBM Classifier**: Leaf-wise tree growth GBDT optimized for high-dimensional feature interaction speed and low memory footprint.
+3. **1D Temporal CNN**: Deep Learning 1D Convolutional Neural Network designed to extract temporal spatial feature hierarchies from continuous physiological window vectors.
+4. **Feed-Forward Deep MLP**: Deep Multi-Layer Perceptron with Batch Normalization, ReLU activations, and Dropout regularization for non-linear feature space mapping.
+
+---
+
+### B. Deterministic 3-Stage Pruning Protocol
+
+To maximize model performance while remaining within Kaggle's execution timeouts and memory limits, a 3-stage tournament pruning protocol is enforced:
+
+```mermaid
+graph TD
+    A["Full Dataset (50,000+ 15s Windows)"] --> B["Stage 1: Screening (10% Subsample, GroupKFold seed=42)"]
+    B --> C1["XGBoost (10%)"]
+    B --> C2["LightGBM (10%)"]
+    B --> C3["1D-CNN (10%)"]
+    B --> C4["Deep MLP (10%)"]
+    
+    C1 --> D["Evaluate Macro F1 & Log-Loss"]
+    C2 --> D
+    C3 --> D
+    C4 --> D
+    
+    D --> E["Stage 2: Semifinal (Top 2 Models, 35-50% Subsample seed=42)"]
+    E --> F1["Semifinalist 1 (35-50%)"]
+    E --> F2["Semifinalist 2 (35-50%)"]
+    
+    F1 --> G["Evaluate Performance & Training Latency"]
+    F2 --> G
+    
+    G --> H["Stage 3: Final Tournament Winner (100% Dataset)"]
+    H --> I["Full Training + Hyperparameter Tuning"]
+    I --> J["Export src/ml/wearable_health_model.pkl"]
+    I --> K["Generate docs/MODEL_TOURNAMENT_RESULTS.md"]
+```
+
+#### Protocol Rules & Constraints
+1. **Identical Data Subsets**:
+   - Stage 1 (10%) uses the EXACT SAME subject-wise sample subset (`random_state=42`, GroupKFold) across all 4 candidate models.
+   - Stage 2 (35-50%) uses the EXACT SAME expanded subject-wise sample subset (`random_state=42`) across the 2 advancing semifinalist models.
+   - This ensures 100% scientific fairness—differences in metric scores reflect pure model architectural capability, not data sampling variance.
+
+2. **Evaluation Metrics**:
+   - Primary Ranking Metric: **Macro F1-Score** across all 8 trauma states.
+   - Secondary Metric: **Multi-Class Log Loss** & **Per-State Recall** (critical for high-acuity states like `CARDIAC_ARREST` and `HEMORRHAGIC_SHOCK`).
+   - Operational Metrics: **Inference Latency** ($\text{ms/sample}$) and **Model Artifact Size** ($\text{MB}$).
+
+3. **Automated Documentation**:
+   - Results for ALL 4 models across ALL 3 STAGES must be logged continuously to `docs/MODEL_TOURNAMENT_RESULTS.md`.
+
+---
+
+### C. Dataset Upload & Kaggle Workflow
+
+1. **Local Parquet Generation**:
+   - `src/ml/dataset_fusion_synthesizer.py` parses raw datasets (~40+ GB) into 15-second feature windows and exports `data/processed/fused_training_matrix.parquet` (~50 MB).
+2. **Kaggle Dataset Upload**:
+   - `src/ml/kaggle_runner.py` uploads `fused_training_matrix.parquet` as a private Kaggle Dataset via `kaggle` API / `kagglehub`.
+3. **Kaggle Kernel Execution**:
+   - `src/ml/kaggle_runner.py` pushes `src/ml/multi_model_tournament.py` as a Kaggle Notebook / Script kernel, starts execution, and polls status until completion.
+4. **Artifact Download & Deployment**:
+   - Downloads the winning model artifact `wearable_health_model.pkl` and `docs/MODEL_TOURNAMENT_RESULTS.md` directly into the repo directory.
+
+---
+
+### D. Pinned Implementation Tasks (For Claude Opus Execution)
+
+- [ ] **Task 1: Generate Processed Dataset**: Execute `python src/ml/dataset_fusion_synthesizer.py` locally to produce `data/processed/fused_training_matrix.parquet`.
+- [ ] **Task 2: Build Tournament Module (`src/ml/multi_model_tournament.py`)**: Implement 4 model wrappers (XGBoost, LightGBM, 1D-CNN, MLP), 3-stage pruning loop, and automated markdown generator (`docs/MODEL_TOURNAMENT_RESULTS.md`).
+- [ ] **Task 3: Build Kaggle Orchestrator (`src/ml/kaggle_runner.py`)**: Implement dataset creation/upload, kernel metadata generator, kernel push/poll execution loop, and artifact retrieval.
+- [ ] **Task 4: Execute & Verify**: Run Kaggle tournament, download winning model artifact `src/ml/wearable_health_model.pkl`, commit results, and verify local model loading.
+
