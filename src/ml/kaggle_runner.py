@@ -112,11 +112,11 @@ sys.path.append('.')
 
 if __name__ == '__main__':
     # Provided we have a run_tournament in the original script
-    if 'run_tournament' in globals():
+    if 'run_tournament' in dir() or 'run_tournament' in globals():
         run_tournament(
-            data_path=DATA_PATH,
-            model_out_path=os.path.join(OUTPUT_DIR, 'wearable_health_model.pkl'),
-            docs_out_dir=DOCS_DIR
+            parquet_path=DATA_PATH,
+            output_dir=OUTPUT_DIR,
+            docs_dir=DOCS_DIR
         )
     else:
         print("Error: run_tournament function not found in script.")
@@ -202,8 +202,8 @@ def download_output(kernel_slug, local_output_dir, project_root):
 
 def run_full_pipeline(project_root):
     project_path = Path(project_root)
-    parquet_dir = project_path / 'data' / 'processed' / 'parquet'  # Assume this structure or hardcode
-    tournament_script = project_path / 'src' / 'ml' / 'tournament.py' # Assume this path
+    parquet_dir = project_path / 'data' / 'processed'
+    tournament_script = project_path / 'src' / 'ml' / 'multi_model_tournament.py'
     
     if not parquet_dir.exists():
         parquet_dir.mkdir(parents=True, exist_ok=True)
@@ -249,11 +249,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     if args.action == 'upload':
-        parquet_dir = Path(args.project_root) / 'data' / 'processed' / 'parquet'
+        parquet_dir = Path(args.project_root) / 'data' / 'processed'
         create_and_upload_dataset(str(parquet_dir), args.dataset_slug)
     elif args.action == 'push':
         tmp_kernel_dir = Path(args.project_root) / 'tmp' / 'kaggle_kernel'
-        tournament_script = Path(args.project_root) / 'src' / 'ml' / 'tournament.py'
+        tournament_script = Path(args.project_root) / 'src' / 'ml' / 'multi_model_tournament.py'
         prepare_kernel(str(tournament_script), args.dataset_slug, args.kernel_slug, str(tmp_kernel_dir))
         push_kernel(str(tmp_kernel_dir))
     elif args.action == 'status':
