@@ -40,3 +40,9 @@ dist/
 .DS_Store
 tmp/
 temp/
+data/raw/
+data/interim/
+data/processed/
+mlruns/
+src/frontend/web/node_modules/
+**/__pycache__/

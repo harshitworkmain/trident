@@ -1,0 +1,13 @@
+{
+  "calibration": {
+    "method": "temperature",
+    "T": 0.9170011843106313,
+    "fitted_on": "tournament out-of-fold winner probabilities",
+    "oof_ece_before": 0.021956660885027283,
+    "oof_ece_after_crossfit": 0.010581590970247523,
+    "oof_log_loss_before": 0.3134367903110951,
+    "oof_log_loss_after_crossfit": 0.31134234514870107
+  },
+  "threshold": null,
+  "threshold_rule": "argmax (multi-class)"
+}

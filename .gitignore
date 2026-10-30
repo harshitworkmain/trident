@@ -156,6 +156,16 @@ data/raw/weather/*.csv
 data/processed/*.csv
 data/external/*.csv
 
+# Wearable ML pipeline (raw datasets, compacted/interim data, frame tables, experiment runs)
+data/raw/wearable_ml_datasets/
+data/interim/
+data/processed/wearable/
+mlruns/
+mlartifacts/
+# dataset hash manifest IS tracked (the packaging rule `MANIFEST` matches it case-insensitively on Windows)
+!data/manifest/
+!data/manifest/wearable_datasets.json
+
 # PlatformIO
 .pio/
 .pioenvs/
@@ -209,3 +219,20 @@ dist/
 # ROV communication logs
 rov_logs/
 serial_logs/
+# Firmware credentials (copy include/secrets.example.h)
+src/firmware/include/secrets.h
+
+# P6 platform: local database (+ WAL/SHM), web build output and deps
+data/databases/trident.db*
+src/frontend/web/node_modules/
+src/frontend/web/dist/
+
+# weather data caches (re-downloadable: python -m src.ml.weather.data) and backtest-only models
+data/raw/weather/*.parquet
+data/processed/weather/
+data/databases/*.log
+data/databases/*.db
+
+# Third-party sample datasets: kept locally, not in git
+data/raw/reference_datasets/*
+!data/raw/reference_datasets/README.md

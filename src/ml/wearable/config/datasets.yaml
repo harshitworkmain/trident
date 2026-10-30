@@ -1,0 +1,184 @@
+# Dataset registry for the wearable ML pipeline.
+# `raw` paths are relative to paths.RAW_DIR; `compact` is the folder name under paths.COMPACT_DIR.
+# License strings are copied from the source pages; "see source" means none was stated there.
+
+wesad:
+  title: WESAD - Wearable Stress and Affect Detection
+  url: https://archive.ics.uci.edu/dataset/465/wesad+wearable+stress+and+affect+detection
+  download: https://uni-siegen.sciebo.de/s/HGdUkoNlW1Ub0Gx/download
+  doi: 10.24432/C57K5T
+  license: CC BY 4.0
+  citation: Schmidt et al., ICMI 2018
+  raw: _zips/wesad.zip
+  archive: _zips/wesad.zip
+  compact: wesad
+  head: stress
+  placement: wrist
+  subjects: [S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S13, S14, S15, S16, S17]
+
+ppg_dalia:
+  title: PPG-DaLiA - PPG dataset for motion compensation and heart rate estimation
+  url: https://archive.ics.uci.edu/dataset/495/ppg+dalia
+  download: https://archive.ics.uci.edu/static/public/495/ppg+dalia.zip
+  doi: 10.24432/C53890
+  license: CC BY 4.0
+  citation: Reiss et al., Sensors 2019
+  raw: _zips/ppg_dalia.zip
+  archive: _zips/ppg_dalia.zip
+  archive_nested: data.zip   # the real archive is a zip stored inside the download
+  compact: ppg_dalia
+  head: activity
+  placement: wrist
+  subjects: [S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15]
+
+mitbih:
+  title: MIT-BIH Arrhythmia Database
+  url: https://physionet.org/content/mitdb/1.0.0/
+  download: https://physionet.org/static/published-projects/mitdb/mit-bih-arrhythmia-database-1.0.0.zip
+  doi: 10.13026/C2F305
+  license: ODC-By 1.0
+  citation: Moody & Mark, IEEE EMB Magazine 2001
+  raw: mit-bih-arrhythmia-database-1.0.0
+  archive: _zips/mitdb.zip
+  compact: mitbih
+  head: rhythm
+  placement: chest
+  # Records 201 and 202 come from the same patient and must share a CV group.
+  same_patient: [[201, 202]]
+
+hifd:
+  title: HIFD - Heart rate & IMU sensor data for fall detection
+  url: https://github.com/nhoyh/HR_IMU_falldetection_dataset
+  ieee_xplore: https://ieeexplore.ieee.org/document/8970371
+  license: see source
+  citation: Nho et al., IEEE Access 2020
+  raw: HR_IMU_falldetection_dataset-master
+  compact: hifd
+  head: fall
+  placement: wrist
+  imu_hz: 50
+
+sisfall:
+  title: SisFall - A Fall and Movement Dataset
+  url: http://sistemic.udea.edu.co/en/investigacion/proyectos/english-falls/
+  download: https://github.com/Sibonile7/Elderly-Fall-Detection-using-AI-SisFall-Dataset- (mirror; original host offline)
+  doi: 10.3390/s17010198
+  license: see source
+  citation: Sucerquia et al., Sensors 2017
+  raw: SisFall_data
+  compact: sisfall
+  head: fall
+  placement: waist
+  imu_hz: 200
+  expected_trials: 4505
+
+upfall:
+  title: UP-Fall Detection Dataset (sensor CSVs)
+  url: https://sites.google.com/up.edu.mx/har-up/
+  doi: 10.3390/s19091988
+  license: see source
+  citation: Martinez-Villasenor et al., Sensors 2019
+  raw: UP_Fall_sensors
+  compact: upfall
+  head: fall
+  placement: wrist
+
+# ─── Added in P3 v2 ──────────────────────────────────────────────────────────
+
+afdb:
+  title: MIT-BIH Atrial Fibrillation Database
+  url: https://physionet.org/content/afdb/1.0.0/
+  download: https://physionet.org/static/published-projects/afdb/mit-bih-atrial-fibrillation-database-1.0.0.zip
+  doi: 10.13026/C2MW2D
+  license: ODC-By 1.0
+  citation: Moody & Mark, Computers in Cardiology 1983
+  archive: _zips/afdb.zip
+  compact: afdb
+  head: rhythm
+  placement: chest
+  # 25 records, ~10 h each; 00735 and 03665 have annotations but no signal file.
+  # Beats: .qrsc (manually corrected) where present, else .qrs (automatic detector).
+
+ltafdb:
+  title: Long Term AF Database
+  url: https://physionet.org/content/ltafdb/1.0.0/
+  download: https://physionet.org/static/published-projects/ltafdb/long-term-af-database-1.0.0.zip
+  doi: 10.13026/C2QG6Q
+  license: ODC-By 1.0
+  citation: Petrutiu, Sahakian & Swiryn, Europace 2007
+  archive: _zips/ltafdb.zip
+  compact: ltafdb
+  head: rhythm
+  placement: chest
+  # 84 records, 24-25 h each, reviewed beat labels + rhythm annotations in .atr
+
+pamap2:
+  title: PAMAP2 Physical Activity Monitoring
+  url: https://archive.ics.uci.edu/dataset/231/pamap2+physical+activity+monitoring
+  download: https://archive.ics.uci.edu/static/public/231/pamap2+physical+activity+monitoring.zip
+  doi: 10.24432/C5NW2H
+  license: CC BY 4.0
+  citation: Reiss & Stricker, ISWC 2012
+  archive: _zips/pamap2.zip
+  archive_nested: PAMAP2_Dataset.zip
+  compact: pamap2
+  head: [activity, fall]
+  placement: wrist
+  imu_hz: 100
+  # Dominant-wrist IMU (acc +-16 g, gyro) and chest-strap heart rate; 9 subjects; no falls.
+
+stress_predict:
+  title: Stress-Predict Dataset
+  url: https://github.com/italha-d/Stress-Predict-Dataset
+  download: https://codeload.github.com/italha-d/Stress-Predict-Dataset/zip/refs/heads/main
+  doi: 10.3390/s22218135
+  license: MIT
+  citation: Iqbal et al., Sensors 2022
+  archive: _zips/stress_predict.zip
+  compact: stress_predict
+  head: stress
+  placement: wrist
+  # Empatica E4 (same device as WESAD); 35 subjects, per-second labels for S02-S35
+  # (Stroop, interview, hyperventilation = stress; baseline/relaxation = non-stress).
+
+capture24:
+  title: Capture-24 - Activity tracker dataset for human activity recognition
+  url: https://ora.ox.ac.uk/objects/uuid:99d7c092-d865-4a19-b096-cc16440cd001
+  download: https://ora.ox.ac.uk/objects/uuid:99d7c092-d865-4a19-b096-cc16440cd001/files/rpr76f381b
+  doi: see url (Oxford Research Archive record)
+  license: CC BY 4.0
+  citation: Chan Chang et al., Scientific Data 2024
+  archive: _zips/capture24.zip
+  compact: capture24
+  head: [activity, fall]
+  placement: wrist
+  imu_hz: 100
+  # 151 participants, ~24 h free-living wrist accelerometry (Axivity AX3), no gyro / PPG.
+
+# MIMIC PERform AF is published as two WFDB zips (AF / non-AF subjects); one entry per zip so
+# the archive helpers work unchanged. External rhythm test only - not in LOADERS, never trained on.
+mimic_perform_af:
+  title: MIMIC PERform AF Dataset (AF subjects)
+  url: https://zenodo.org/records/6807403
+  download: https://zenodo.org/records/6807403/files/mimic_perform_af_wfdb.zip
+  doi: 10.5281/zenodo.6807403
+  license: ODbL 1.0
+  citation: Charlton et al., Physiological Measurement 2022 (derived from MIMIC-III Waveform DB)
+  archive: _zips/mimic_perform_af_wfdb.zip
+  compact: mimic_perform_af   # no compacted copy: read in place
+  head: rhythm (external test)
+  placement: finger
+  # 19 ICU adults in AF, 20 min each, 125 Hz: fingertip PPG, lead-II ECG, impedance resp (WFDB fmt 16).
+
+mimic_perform_non_af:
+  title: MIMIC PERform AF Dataset (non-AF subjects)
+  url: https://zenodo.org/records/6807403
+  download: https://zenodo.org/records/6807403/files/mimic_perform_non_af_wfdb.zip
+  doi: 10.5281/zenodo.6807403
+  license: ODbL 1.0
+  citation: Charlton et al., Physiological Measurement 2022 (derived from MIMIC-III Waveform DB)
+  archive: _zips/mimic_perform_non_af_wfdb.zip
+  compact: mimic_perform_non_af
+  head: rhythm (external test)
+  placement: finger
+  # 16 ICU adults not in AF (sinus rhythm, possibly with ectopy), same format.

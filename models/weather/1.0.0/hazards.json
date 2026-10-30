@@ -1,0 +1,20 @@
+{
+ "thresholds": {
+  "heat_index_watch_c": 41.0,
+  "heat_index_warning_c": 54.0,
+  "temp_watch_c": 37.0,
+  "temp_warning_c": 40.0,
+  "rain_hourly_mm": 7.6,
+  "rain_24h_heavy_mm": 64.5,
+  "rain_24h_very_heavy_mm": 115.6,
+  "wind_watch_ms": 10.8,
+  "wind_warning_ms": 17.2,
+  "api_decay_per_day": 0.85,
+  "api_watch_percentile": 97.5,
+  "api_warning_percentile": 99.5
+ },
+ "api_thresholds_mm": {
+  "watch": 92.14907156657914,
+  "warning": 168.40145985282643
+ }
+}

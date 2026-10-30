@@ -1,0 +1,88 @@
+# Tier-2 fusion engine thresholds (docs/WEARABLE_ML_ARCHITECTURE.md section 9).
+# Every number here is a rule parameter, versioned with the engine; `ref` notes where it comes from.
+version: 1.2.0
+
+# Most severe first: when several states are active the first one listed wins.
+severity: [CARDIAC_ARREST, ASPIRATION_HYPOXIA, HEMORRHAGIC_SHOCK, CONCUSSIVE_STASIS, CRUSH_ENTRAPMENT,
+           HYPOTHERMIA_RISK, ELEVATED_STRESS]
+state_ids: {STABLE: 0, ELEVATED_STRESS: 1, HYPOTHERMIA_RISK: 2, ASPIRATION_HYPOXIA: 3, HEMORRHAGIC_SHOCK: 4,
+            CONCUSSIVE_STASIS: 5, CRUSH_ENTRAPMENT: 6, CARDIAC_ARREST: 7}
+basis: {CARDIAC_ARREST: ml+rule, ASPIRATION_HYPOXIA: rule, HEMORRHAGIC_SHOCK: ml+rule, CONCUSSIVE_STASIS: ml+rule,
+        CRUSH_ENTRAPMENT: ml+rule, HYPOTHERMIA_RISK: rule, ELEVATED_STRESS: ml, STABLE: '-'}
+base_risk: {CARDIAC_ARREST: 0.95, ASPIRATION_HYPOXIA: 0.85, HEMORRHAGIC_SHOCK: 0.85, CONCUSSIVE_STASIS: 0.8,
+            CRUSH_ENTRAPMENT: 0.75, HYPOTHERMIA_RISK: 0.6, ELEVATED_STRESS: 0.4, STABLE: 0.05}
+
+# Head operating points used by fusion, overriding the registry's Tier-1 thresholds. Chosen on the P5
+# end-to-end replay (data/processed/wearable/replay/fall_operating_points.json): fall 0.6 catches 84.6 %
+# of HIFD falls (0.72: 61.5 %) for 1.20 vs 0.74 CONCUSSIVE_STASIS false alarms / 8 h on 1,403 h of
+# held-out Capture-24 daily life.
+head_thresholds:
+  fall: 0.6
+
+# Each state: dwell_s = condition must hold this long to enter; exit_s = condition must be false
+# this long to leave (hysteresis).
+states:
+  CARDIAC_ARREST: {dwell_s: 0, exit_s: 15}          # the 10 s no-beat window is inside the condition
+  ASPIRATION_HYPOXIA: {dwell_s: 15, exit_s: 30}
+  HEMORRHAGIC_SHOCK: {dwell_s: 60, exit_s: 120}
+  CONCUSSIVE_STASIS: {dwell_s: 0, exit_s: 30}       # immobility requirement is inside the condition
+  CRUSH_ENTRAPMENT: {dwell_s: 0, exit_s: 60}
+  HYPOTHERMIA_RISK: {dwell_s: 120, exit_s: 300}
+  ELEVATED_STRESS: {dwell_s: 120, exit_s: 60}     # P5: advisory only (stress_operating_points.json)
+
+signals:
+  immobile_acc_std_g: 0.03           # per-frame |acc| std below this = no movement
+  moving_acc_std_g: 0.10
+  battery_low_v: 3.4
+  eda_high_ratio: 1.3                # EDA / personal baseline
+  gps_still_m: 10.0                  # movement over the immobility window below this = not moving
+
+cardiac:
+  no_beat_s: 10                      # contact confirmed, no beats, immobile
+  brady_bpm: 30
+  tachy_bpm: 180
+  rhythm_p: 0.8                      # rhythm head P(abnormal)
+
+hypoxia:
+  spo2_low: 90
+  drop_pct: 2.0                      # fall of > 2 % within drop_window_s
+  drop_window_s: 10
+  submerged_dp_hpa: 5.0              # pressure above 60 s minimum, while wet -> escalate
+
+shock:
+  hr_min: 120                        # ATLS class II-IV pattern
+  hr_trust_p: 0.5
+  hr_slope_window_s: 60
+  temp_slope_window_s: 120
+
+concussion:
+  fall_window_s: 120                 # impact must be this recent
+  immobile_s: 30
+  severe_impact_g: 6.0
+  severe_drop_hpa: 0.12              # ~1 m height change
+
+crush:
+  # P5 decision (option D + E fallback, docs/reports/WEARABLE_FUSION_REPLAY.md): crush false alarms per 8 h on
+  # Stress-Predict 14.3 (old rule) -> 0.51; 0 on PPG-DaLiA, WESAD, PAMAP2.
+  immobile_s: 120                    # triggered path: still this long ...
+  require_impact_s: 600              # ... with the stillness starting within 10 min of a detected impact
+  untriggered_immobile_s: 300        # fallback path without an impact
+  hr_above_baseline_bpm: 20          # arousal = HR above the person's own 2-min baseline
+  use_stress_head: false             # stress head is advisory only (no transfer: Stress-Predict macro-F1 0.52)
+  stress_p: 0.7
+
+hypothermia:
+  skin_c: 32.0
+  temp_slope_window_s: 300
+  brady_bpm: 60
+
+stress:
+  # Advisory only (never critical): the stress head does not transfer beyond WESAD (Stress-Predict
+  # macro-F1 0.52). p 0.85 + 120 s dwell keeps 86 % of WESAD TSST time, 0 % of baseline, and cuts
+  # alerts per 8 h from 24.9 -> 16.2 (PPG-DaLiA) and 19.4 -> 9.7 (Stress-Predict) vs p 0.7 / 60 s.
+  p: 0.85
+
+# Alert level per state, for the dashboard: critical states page responders, advisory ones are shown only.
+alert_level: {CARDIAC_ARREST: critical, ASPIRATION_HYPOXIA: critical, HEMORRHAGIC_SHOCK: critical,
+              CONCUSSIVE_STASIS: critical, CRUSH_ENTRAPMENT: critical, HYPOTHERMIA_RISK: critical,
+              ELEVATED_STRESS: advisory, STABLE: none}

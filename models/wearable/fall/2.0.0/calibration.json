@@ -1,0 +1,14 @@
+{
+  "calibration": {
+    "method": "platt",
+    "a": 1.4642619545647209,
+    "b": -1.367902247728989,
+    "fitted_on": "tournament out-of-fold winner probabilities",
+    "oof_ece_before": 0.005784943434529765,
+    "oof_ece_after_crossfit": 0.0005427579975396838,
+    "oof_log_loss_before": 0.019849316279140078,
+    "oof_log_loss_after_crossfit": 0.01323477175900814
+  },
+  "threshold": 0.72,
+  "threshold_rule": "most sensitive threshold with OOF daily-life false alarms \u2264 1.0/8 h"
+}

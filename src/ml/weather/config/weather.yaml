@@ -1,0 +1,61 @@
+# Weather forecaster configuration. Change `site` to forecast elsewhere; everything downstream
+# (data cache names, climatology, hazard thresholds) keys off this file.
+site:
+  name: chennai
+  lat: 13.0827
+  lon: 80.2707
+  timezone: Asia/Kolkata
+  elevation_m: 16         # Chennai airport (Meteostat station); used to reduce sea-level pressure to surface pressure
+  local_csv: data/raw/weather/chennai_historical.csv   # Meteostat hourly export (offline fallback)
+
+data:
+  start: '2015-01-01'
+  archive_lag_days: 6     # the archive (ERA5/ERA5T) trails real time by ~5 days
+
+split:                    # by time, all relative to the last available hour
+  test_months: 12         # rolling-origin backtest window (held out)
+  cal_months: 6           # calibration + model-selection slice, just before the test window
+  origin_stride_h: 3      # backtest/calibration origins every 3 h (8 per day, all hours of day covered)
+
+horizons: 48
+horizon_groups: [[1, 3], [4, 6], [7, 12], [13, 24], [25, 48]]
+quantiles: [0.1, 0.5, 0.9]
+
+lgbm:
+  rows_per_group: 90000   # sampled (origin, horizon) pairs per group model - bounds memory/time
+  params:
+    learning_rate: 0.05
+    num_leaves: 31
+    min_data_in_leaf: 100
+    feature_fraction: 0.8
+    bagging_fraction: 0.8
+    bagging_freq: 1
+    lambda_l2: 1.0
+    num_iterations: 300
+    num_threads: 3
+    verbose: -1
+
+seq:
+  lookback: 72
+  hidden: 64
+  epochs: 10
+  batch: 256
+  lr: 0.002
+  train_stride_h: 1
+
+# Hazard thresholds. Sources: NOAA heat-index categories; IMD heavy-rain (64.5 mm/24 h),
+# very-heavy (115.6 mm/24 h) classes and a 7.6 mm/h "heavy" hourly rate (AMS definition);
+# Beaufort 6 (strong breeze) / 8 (gale, ~IMD depression-strength wind) for wind.
+hazards:
+  heat_index_watch_c: 41.0      # NOAA "danger" (~105 F)
+  heat_index_warning_c: 54.0    # NOAA "extreme danger" (~130 F)
+  temp_watch_c: 37.0            # IMD heat-wave threshold for coastal stations
+  temp_warning_c: 40.0          # IMD heat-wave threshold for plains
+  rain_hourly_mm: 7.6
+  rain_24h_heavy_mm: 64.5
+  rain_24h_very_heavy_mm: 115.6
+  wind_watch_ms: 10.8
+  wind_warning_ms: 17.2
+  api_decay_per_day: 0.85       # antecedent precipitation index decay
+  api_watch_percentile: 97.5    # of the training-period API distribution
+  api_warning_percentile: 99.5

@@ -1,320 +1,127 @@
-<p align="center">
-  <img src="assets/images/TRIDENT_logo.png" alt="TRIDENT Logo" width="400"/>
-</p>
+<div align="center">
+  <img src="assets/images/TRIDENT_logo.png" alt="TRIDENT" width="360"/>
+</div>
 
-# TRIDENT - Integrated Disaster Response & Rescue Ecosystem
+# TRIDENT: integrated flood and water-rescue platform
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Flask](https://img.shields.io/badge/flask-2.0+-green.svg)](https://flask.palletsprojects.com/)
-[![Render](https://img.shields.io/badge/Render-Live%20Demo-brightgreen.svg)](https://trident-command-center.onrender.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)
+![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688.svg)
+![React](https://img.shields.io/badge/console-React%20%2B%20Vite-61dafb.svg)
+![ESP32](https://img.shields.io/badge/firmware-ESP32-e7352c.svg)
 
-This is an integrated disaster rescue ecosystem that enables real-time situational awareness, predictive risk analysis, and priority classification. It combines a multi-sensor wearable (ESP32, MAX30102, GSR, MPU6050, NEO-6M GPS, buzzer) and an underwater ROV (Arduino Uno, 4x thrusters, LiPo) with an AI-powered Flask central orchestrator.
+TRIDENT connects the people who need rescue with the people who do it.
 
-🌐 **Live Web Application:** [https://trident-command-center.onrender.com/](https://trident-command-center.onrender.com/)
+- **The public** can ask for help from a phone. This works offline (the request is queued) and over plain SMS.
+- **A wearable band** streams vitals and motion. On-server ML and a rule-based fusion engine detect falls, entrapment, cardiac and breathing emergencies, and loss of contact. The band also has an SOS button for people without a phone.
+- **Dispatchers** work from one live console:
+  - a prioritised queue with reasons for each priority
+  - team and ROV assignment
+  - capacity warnings when teams run out
+  - weather and river forecasts
+  - analytics on live data
+- **ROVs** are semi-autonomous. They can be piloted from the browser, and their camera feed carries live person detection, face recognition and distance estimates.
 
-## 🎥 Demonstration
+It is built for Chennai floods and designed to keep working when connectivity fails. TRIDENT is a
+decision-support tool, not a certified medical device.
 
-Watch the multi-functional health & safety wearable in action:
+<div align="center">
+  <img src="assets/images/console-operations.png" alt="Operations console" width="860"/>
+</div>
 
-<video src="https://github.com/harshitworkmain/trident/raw/main/assets/videos/wearable-demo.mp4" controls="controls" style="max-width: 100%;"></video>
+## What's inside
 
-*(Note: Video playback might require viewing on standard GitHub web. A direct download or raw viewing might be necessary depending on your device.)*
+| Part | Highlights |
+|---|---|
+| **Public SOS** | Offline-capable PWA, SMS fallback (`SOS <lat>,<lng> P<people> I<injured> T<type>`), tracking link, duplicate detection |
+| **Dispatch** | 0–100 triage score with reasons → P1 (most urgent) to P5; priority ageing; urgency-ordered auto-dispatch; capacity banner with human-confirmed team moves; automatic moves only in extreme cases; optimistic locking |
+| **Wearable ML** | 5 Tier-1 heads trained on real public datasets (stress, fall, activity, HR-trust, rhythm), each chosen by a subject-grouped model tournament, calibrated and exported to ONNX. A Tier-2 fusion state machine validated on real-data false-alarm replays |
+| **Weather** | Multi-variable p10/p50/p90 forecasts to 48 h (LightGBM + GRU) that beat persistence at every horizon; heat, heavy-rain, wind and flood-risk hazards; GloFAS river discharge |
+| **ROV** | Autonomous transit, exclusive manual control, dead-man stop, a serial bridge to real units, a 1 Hz track, and a live YOLOv8n + LBPH camera feed |
+| **Firmware** | ESP32 band firmware 2.2.0: 1.5 s frames, an 8 min offline queue that keeps event frames, batched idempotent upload, SOS button, buzzer patterns |
+| **Platform** | FastAPI, SQLAlchemy + Alembic (SQLite or PostgreSQL), JWT with rotating refresh tokens, RBAC, WebSocket push, leader-elected background jobs, audit log, rate limits, `/readyz` and `/metrics` |
 
-## 🏗️ System Architecture
+<div align="center">
+  <img src="assets/images/console-rov-missions.png" alt="ROV mission with live camera detections" width="860"/>
+</div>
 
-![System Architecture](assets/images/architecture.png)
-![TRIDENT Infographic](assets/images/infog-trident.png)
+## Quick start
 
-TRIDENT operates across three integrated layers:
-
-### 📱 Smart Wearable (Edge Layer)
-<p align="center">
-  <img src="assets/images/infog-wearable.png" alt="Wearable Infographic" width="600"/>
-</p>
-
-- ESP32-based embedded firmware with multi-sensor integration
-- Real-time vital signs, motion, and GPS monitoring
-- Edge-based emergency detection and alert generation
-- **Cloud Telemetry Push**: Streams sensor data every 1.5s via HTTP POST to the Render-deployed command center (`POST /api/telemetry/wearable`)
-- **Bi-directional Remote Control**: Receives and executes remote commands (reset fall alert, calibrate GSR, update geofence) from the dashboard via HTTP response payload
-
-### 🖥️ Central Command Dashboard (Decision Layer)
-![Command Dashboard](assets/images/dashboard-photo.jpg)
-
-- Web-based emergency response coordination interface
-- AI-powered priority classification and resource allocation
-- Real-time visualization of incidents and response teams
-- **Live Wearable Telemetry Grid**: 6-card dashboard (System Status, Fall Detection, GPS/Geofence, Geofence Config, Vitals Monitor, GSR/Stress) that polls `GET /api/telemetry/wearable/latest` every 1.5 seconds with emergency flash animations
-- **Remote Wearable Control Panel**: Interactive buttons to remotely reset fall alerts, calibrate GSR baseline, and update geofence parameters on the ESP32 device
-
-**Live Telemetry Data Feed:**
-![Live Telemetry](assets/images/wearable-live-telemetry-data.png)
-
-### 🚁 Autonomous ROV (Action Layer)
-- Remote-controlled deployment system for emergency scenarios
-- Sensor integration for environmental assessment
-- Automated navigation to high-priority locations
-
-### 👁️ Computer Vision Subsystem (Perception Layer)
-- Real-time person, obstacle, and object detection using YOLOv8
-- LBPH face recognition with name-ID mapping database
-- Stereo-distance estimation and Text-to-Speech (TTS) alerts for navigation assistance
-
-## 🛠️ Hardware Engineering & Design
-
-### Wearable Component
-The wearable hardware was designed meticulously integrating multiple bio-sensors and embedded modules.
-<p float="left">
-  <img src="assets/images/cad/wearable-isometric.jpg" width="400"/>
-  <img src="assets/images/cad/wearable-disassembled-view.jpg" width="400"/>
-</p>
-<p float="left">
-  <img src="assets/images/cad/wearable-pcb-cad.jpg" width="400"/>
-</p>
-
-**CAD Flythrough:**
-<video src="https://github.com/harshitworkmain/trident/raw/main/assets/videos/Wearable-cad.mp4" controls="controls" style="max-width: 100%;"></video>
-
-### Autonomous ROV
-The underwater ROV undergoes rigorous fluid dynamics analysis to ensure stability under water currents.
-<p float="left">
-  <img src="assets/images/cad/rov-isometric-view.jpg" width="400"/>
-  <img src="assets/images/cfd.jpg" width="400"/>
-</p>
-
-**ROV Field Deployment:**
-<video src="https://github.com/harshitworkmain/trident/raw/main/assets/videos/finalrov.mp4" controls="controls" style="max-width: 100%;"></video>
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Python 3.7+
-- Node.js 14+ (for frontend development)
-- PlatformIO (for firmware development)
-- Qt6 (for ROV control station)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd trident
-   ```
-
-2. **Install Python dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Set up configuration**
-   ```bash
-   cp config/development.env.example config/development.env
-   # Edit config/development.env with your settings
-   ```
-
-4. **Initialize database**
-   ```bash
-   python scripts/development/database_reset.py
-   ```
-
-5. **Start the backend server**
-   ```bash
-   python app.py
-   ```
-
-6. **Access the platform**
-   - Open browser to `http://localhost:5000` (contains the unified SOS, Dashboard, and Analytics in one tabbed view)
-
-## 📁 Project Structure
-
-```
-trident/
-├── src/                     # Source code
-│   ├── firmware/           # ESP32 embedded firmware
-│   ├── backend/            # Flask API server
-│   ├── ml/                 # Machine learning models
-│   ├── rov/                # ROV control system
-│   ├── cv/                 # Computer vision subsystem (YOLOv8 & face recognition)
-│   └── frontend/           # Web interface
-├── data/                   # Data files and models
-├── docs/                   # Documentation
-├── scripts/                # Utility scripts
-├── assets/                 # Static resources (Images, Videos, CADs)
-├── config/                 # Configuration files
-└── app.py                  # Root application entrypoint
-```
-
-## 🔧 Development Setup
-
-### Backend Development
 ```bash
-# Start development server
-python app.py
-
-# Run tests
-python -m pytest src/backend/tests/
-
-# Database operations
-python scripts/development/database_reset.py
-python scripts/development/add_sample_data.py
+pip install -r requirements.txt                       # or requirements-prod.txt to serve only
+(cd src/frontend/web && npm ci && npm run build)      # build the console
+python app.py                                         # http://localhost:8000
+python -m src.backend.app.tools.simulate --with-sos   # optional: live virtual wearables
 ```
 
-### Firmware Development
-```bash
-# Flash ESP32
-cd src/firmware
-pio run --target upload
+Demo logins (local only): `admin`, `dispatcher`, `responder`, `viewer`. The password for all four is
+`trident-demo-2026`.
 
-# Monitor serial output
-pio device monitor
+The full setup is in [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md). It covers the camera worker,
+connecting real hardware, and configuration.
+
+## Documentation
+
+| | |
+|---|---|
+| [Architecture](docs/ARCHITECTURE.md) | Components, data flows, design principles, repository layout |
+| [Getting started](docs/GETTING_STARTED.md) | Install, run, demo, tests, hardware, configuration |
+| [User guide](docs/USER_GUIDE.md) | The console for each role, ROV piloting, the band |
+| [Deployment](docs/DEPLOYMENT.md) | Production checklist, Docker Compose, PostgreSQL, backups |
+| [Platform design and API](docs/PLATFORM_DESIGN.md) | API contract, consistency/availability (CAP), transactions, auth, scheduling, WebSocket |
+| [Wearable ML architecture](docs/WEARABLE_ML_ARCHITECTURE.md) | Heads, tournament, fusion, decisions |
+| [Training guide](docs/TRAINING_GUIDE.md) | Rebuild every model from raw data |
+| [Weather model](docs/WEATHER_MODEL.md) | Data, method, backtests |
+| [Resilience and roadmap](docs/RESILIENCE_AND_FUTURE_WORK.md) | Degraded conditions, fallbacks, future work |
+| [All documentation](docs/README.md) | The full index, including generated reports |
+
+Component READMEs: [backend](src/backend/README.md), [web console](src/frontend/web/README.md),
+[firmware](src/firmware/README.md), [computer vision](src/cv/README.md).
+
+## Hardware
+
+<div align="center">
+  <img src="assets/images/cad/wearable-isometric.jpg" width="300"/>
+  <img src="assets/images/cad/wearable-pcb-cad.jpg" width="300"/>
+  <img src="assets/images/cad/rov-isometric-view.jpg" width="300"/>
+</div>
+
+| Device | Parts |
+|---|---|
+| Wearable band | ESP32 with MPU6050 (motion), MAX30102 (PPG), MAX30205 (skin temperature), BMP388 (pressure), Grove GSR, water contact, NEO-6M GPS, buzzer and SOS button (wiring in the [firmware README](src/firmware/README.md)) |
+| ROV | Serial-controlled thrusters and lights, plus a camera for the vision worker |
+
+There is a demo video of the wearable at [assets/videos/wearable-demo.mp4](assets/videos/wearable-demo.mp4).
+
+## Repository layout
+
+```
+app.py                 server entry point
+src/backend/app/       FastAPI command server (+ migrations in src/backend/migrations)
+src/frontend/web/      React operations console and public PWA
+src/ml/wearable/       wearable data pipeline, model tournament, export, serving runtime, fusion
+src/ml/weather/        weather forecasting
+src/firmware/          ESP32 band firmware (PlatformIO)
+src/rov/               ROV serial bridge
+src/cv/                ROV vision worker and face enrolment
+models/                exported models, registries, model cards
+tests/                 backend and ML test suites
+docs/                  documentation (generated reports in docs/reports/)
 ```
 
-### Frontend Development
-```bash
-# Serve static files (development)
-python -m http.server 8080 --directory src/frontend/static
-```
+## Status
 
-### ROV Control
-```bash
-# Launch ROV control station
-python src/rov/communication/serial_interface.py
-```
+Development phases P0–P8 are complete. The full QA round covered functional, accessibility,
+security, load and failure-injection testing, and all 128 automated tests pass. The roadmap for future
+versions is in [docs/RESILIENCE_AND_FUTURE_WORK.md](docs/RESILIENCE_AND_FUTURE_WORK.md).
 
-### Computer Vision (CV) Pipeline
-```bash
-# Step 1: Capture face training data
-cd src/cv/face_recognition
-python3 src/face_taker.py
+## Team
 
-# Step 2: Train LBPH model
-python3 src/face_trainer.py
+![TRIDENT team](assets/images/team-photo.jpg)
 
-# Step 3: Run YOLOv8 + Face Recognition combined loop
-cd ../yolov8_model
-python3 main.py
-```
+## License
 
-## 🧠 Machine Learning Components
+MIT; see [LICENSE](LICENSE).
 
-### Weather Prediction
-- LSTM-based temperature forecasting
-- Historical weather data analysis
-- Real-time prediction API
-
-### Risk Analysis
-- Graph-based risk propagation modeling
-- Flood network analysis
-- Storm path prediction
-- Geospatial risk zone mapping
-
-## 📊 Key Features
-
-### Emergency Detection
-- **Fall Detection**: MPU6050 accelerometer analysis
-- **Vital Signs Monitoring**: MAX30102 heart rate and SpO2
-- **Stress Assessment**: GSR sensor integration
-- **Location Tracking**: GPS with geofencing
-- **Obstacle & Person Detection**: Real-time YOLOv8 object detection with voice feedback
-- **Facial Recognition**: LBPH face recognizer with name mapping and distance tracking
-
-### Priority Classification
-- **Unified Triage Scoring**: Combines SOS form metrics (injuries, vulnerable populations, emergency type) with live wearable telemetry (SpO₂, BPM, fall detection, GSR stress, geofence breach) into a single 1–5 priority score
-- Multi-factor consideration (injuries, vulnerable populations)
-- Resource availability optimization
-- Real-time priority updates
-- **Auto-ROV Scramble**: Priority ≥ 4 automatically triggers Team Alpha (AUTO_DEPLOY) and dispatches the nearest ROV to victim GPS coordinates
-
-### Response Coordination
-- Team assignment and notification
-- Status tracking and updates
-- Resource deployment optimization
-- Analytics and reporting
-
-### Production & Cloud Deployment
-- **Live Demo (Render):** [https://trident-command-center.onrender.com/](https://trident-command-center.onrender.com/)
-
-#### Docker / Render Container Deployment
-1. Build and run using Docker:
-   ```bash
-   docker build -t trident-command-center .
-   docker run -p 7860:7860 trident-command-center
-   ```
-
-2. Manual Production Execution:
-   ```bash
-   pip install -r requirements-prod.txt
-   gunicorn -b 0.0.0.0:5000 app:app
-   ```
-
-## 🧪 Testing
-
-### Backend Tests
-```bash
-# Run all tests
-python -m pytest src/backend/tests/
-
-# Specific test categories
-python -m pytest src/backend/tests/test_api.py
-python -m pytest src/backend/tests/test_priority_system.py
-```
-
-### ROV Integration Tests
-```bash
-python src/rov/tests/test_rov_integration.py
-python src/rov/tests/test_rov_deployment.py
-```
-
-## 📖 Documentation
-
-- [System Architecture](docs/SYSTEM_ARCHITECTURE.md)
-- [Quick Start Guide](docs/QUICK_START.md)
-- [API Documentation](docs/API_DOCUMENTATION.md)
-- [ROV Operations](docs/ROV_OPERATIONS.md)
-- [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
-- [User Manual](docs/USER_MANUAL.md)
-
-### Wearable Telemetry API Endpoints
-| Endpoint | Method | Description |
-| --- | --- | --- |
-| `/api/telemetry/wearable` | POST | Ingest real-time ESP32 sensor telemetry JSON; returns pending remote commands |
-| `/api/telemetry/wearable/latest` | GET | Poll latest telemetry snapshot for all devices (dashboard 1.5s refresh) |
-| `/api/wearable/control` | POST | Queue remote commands for ESP32 (`reset_fall`, `calibrate_gsr`, `set_geofence`) |
-| `/api/wearable-devices` | GET | Get all wearable devices with status, vitals, and GPS (backed by real telemetry DB) |
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Emergency Contacts
-
-- **General Emergency**: 100
-- **Fire Department**: 101
-- **Medical Emergency**: 108
-- **Disaster Management**: 108
-
-## 🧑‍🤝‍🧑 Meet the Team
-![Team Photo](assets/images/team-photo.jpg)
-
-## 🔮 Future Enhancements
-
-- **Mobile Applications**: iOS and Android apps for field operations
-- **Advanced AI Integration**: Deep learning for emergency prediction
-- **IoT Sensor Network**: Expanded environmental monitoring
-- **Blockchain Integration**: Secure emergency records
-- **Multi-language Support**: Localization for global deployment
-
----
-
-**⚠️ Important**: This is an emergency response system. In case of real emergencies, always contact local emergency services directly using the numbers provided above.
-
-**🛡️ TRIDENT - Your Shield in Times of Crisis**
+> **In a real emergency, call local emergency services first.** In India: 112 (emergency), 108 (ambulance),
+> 101 (fire), 100 (police), 1070 (Tamil Nadu State Emergency Operation Centre).

@@ -1,0 +1,18 @@
+# Tournament protocol (docs/WEARABLE_ML_ARCHITECTURE.md section 8)
+seed: 42
+outer_folds: 5          # StratifiedGroupKFold over subjects/patients (no subject in train and test)
+inner_folds: 3          # nested CV used only for Stage-2 tuning inside each outer training split
+finalists: 2
+bootstrap: 1000         # subject-level bootstrap for the Stage-3 comparison
+
+# Stage-2 Optuna budget per outer fold (trials, wall-clock cap in seconds)
+budget:
+  xgboost:  {trials: 20, timeout_s: 240}
+  lightgbm: {trials: 20, timeout_s: 240}
+  mlp:      {trials: 8,  timeout_s: 360}
+  cnn1d:    {trials: 8,  timeout_s: 360}
+  logreg:   {trials: 10, timeout_s: 60}
+  extratrees: {trials: 12, timeout_s: 300}
+  minirocket: {trials: 6,  timeout_s: 420}
+
+# Fall head: false alarms are reported at 0.5 / 0.7 / 0.9 / 0.95 (run.FALL_THRESHOLDS); P4 picks the operating point

@@ -1,0 +1,179 @@
+{
+  "generated_utc": "2026-10-29T21:40:48+00:00",
+  "emulator_version": "1.0.0",
+  "datasets": {
+    "wesad": {
+      "title": "WESAD - Wearable Stress and Affect Detection",
+      "url": "https://archive.ics.uci.edu/dataset/465/wesad+wearable+stress+and+affect+detection",
+      "license": "CC BY 4.0",
+      "citation": "Schmidt et al., ICMI 2018",
+      "raw": {
+        "path": "_zips/wesad.zip",
+        "bytes": 2249444501,
+        "sha256": "5e15d2606adf16d819ba535c1786d92e94bae5ff5392f7ae01fb63f9938fd71c"
+      },
+      "compact": {
+        "files": 15,
+        "bytes": 21463541,
+        "sha256": "9e1abd4d906a468db718fbdc023785c369a7479ecc4aa6b7c7194f2bb86841bd"
+      }
+    },
+    "ppg_dalia": {
+      "title": "PPG-DaLiA - PPG dataset for motion compensation and heart rate estimation",
+      "url": "https://archive.ics.uci.edu/dataset/495/ppg+dalia",
+      "license": "CC BY 4.0",
+      "citation": "Reiss et al., Sensors 2019",
+      "raw": {
+        "path": "_zips/ppg_dalia.zip",
+        "bytes": 2865111320,
+        "sha256": "5772387956e34e2e2dc4c2ddbeb98cb70569d5112fa4c13ee98a17680b84a1f3"
+      },
+      "compact": {
+        "files": 15,
+        "bytes": 40715764,
+        "sha256": "69f20d9649ef9bf6fc25d9933ad365acf4c28bad175172780f64700b5bbb2941"
+      }
+    },
+    "mitbih": {
+      "title": "MIT-BIH Arrhythmia Database",
+      "url": "https://physionet.org/content/mitdb/1.0.0/",
+      "license": "ODC-By 1.0",
+      "citation": "Moody & Mark, IEEE EMB Magazine 2001",
+      "raw": {
+        "path": "mit-bih-arrhythmia-database-1.0.0",
+        "files": 705,
+        "bytes": 109337739,
+        "sha256": "dbab0a8e4801e45855450bcd173780bed40663e05de81a7c224792f1d99347a4"
+      },
+      "compact": {
+        "files": 48,
+        "bytes": 378467,
+        "sha256": "6786ae56fc4c5756d8ba2938bcd9e2152a59a392bd85264dee94de7906a8804a"
+      }
+    },
+    "hifd": {
+      "title": "HIFD - Heart rate & IMU sensor data for fall detection",
+      "url": "https://github.com/nhoyh/HR_IMU_falldetection_dataset",
+      "license": "see source",
+      "citation": "Nho et al., IEEE Access 2020",
+      "raw": {
+        "path": "HR_IMU_falldetection_dataset-master",
+        "files": 351,
+        "bytes": 12965503,
+        "sha256": "d00bd0c4a091570191824024435d79cde045a4559492ee8e31c48f9744a6ab94"
+      },
+      "compact": {
+        "files": 21,
+        "bytes": 12220794,
+        "sha256": "63d6a3cc548289008f76ca667a1bbd77c82167573f3cee196acf9c8a3ce92e8d"
+      }
+    },
+    "sisfall": {
+      "title": "SisFall - A Fall and Movement Dataset",
+      "url": "http://sistemic.udea.edu.co/en/investigacion/proyectos/english-falls/",
+      "license": "see source",
+      "citation": "Sucerquia et al., Sensors 2017",
+      "raw": {
+        "path": "SisFall_data",
+        "status": "deleted after verified lossless compaction"
+      },
+      "compact": {
+        "files": 40,
+        "bytes": 190399334,
+        "sha256": "b56ba97cbd62ac25bf5084e3d37502c8ec66660010de2b9321cdb77cc42e9138"
+      }
+    },
+    "upfall": {
+      "title": "UP-Fall Detection Dataset (sensor CSVs)",
+      "url": "https://sites.google.com/up.edu.mx/har-up/",
+      "license": "see source",
+      "citation": "Martinez-Villasenor et al., Sensors 2019",
+      "raw": {
+        "path": "UP_Fall_sensors",
+        "files": 560,
+        "bytes": 82453051,
+        "sha256": "a1772ae9d7a817c075774e7475ea13b1ae5f218b29fc8f9243fa43c25b738baf"
+      },
+      "compact": {
+        "files": 17,
+        "bytes": 18797529,
+        "sha256": "e98ce12b6a6b1ee304b1b3b3cf7bbf1fd3d2a7347a79316618d6d36b451b2c8e"
+      }
+    },
+    "afdb": {
+      "title": "MIT-BIH Atrial Fibrillation Database",
+      "url": "https://physionet.org/content/afdb/1.0.0/",
+      "license": "ODC-By 1.0",
+      "citation": "Moody & Mark, Computers in Cardiology 1983",
+      "raw": {
+        "path": "_zips/afdb.zip",
+        "bytes": 461033254,
+        "sha256": "1f19cb2ac53b6d847f304cbd4bd11e7db32978c529213f88407e09053d8c817b"
+      },
+      "compact": {
+        "files": 25,
+        "bytes": 3031256,
+        "sha256": "2aa08bcc673432ec7a260403dee7ca3643b7a2febd6d84bd190cf7138eed0bc1"
+      }
+    },
+    "ltafdb": {
+      "title": "Long Term AF Database",
+      "url": "https://physionet.org/content/ltafdb/1.0.0/",
+      "license": "ODC-By 1.0",
+      "citation": "Petrutiu, Sahakian & Swiryn, Europace 2007",
+      "raw": {
+        "path": "_zips/ltafdb.zip",
+        "bytes": 1776262655,
+        "sha256": "f23317afe0da5df044823465d21dfba6aeaafcab1219fe53706128fd86731d56"
+      },
+      "compact": {
+        "files": 84,
+        "bytes": 38861909,
+        "sha256": "b6577f9f073e6ea0fd97d79e976e21e0f5f74883331cae4afc77c18e7095e89e"
+      }
+    },
+    "pamap2": {
+      "title": "PAMAP2 Physical Activity Monitoring",
+      "url": "https://archive.ics.uci.edu/dataset/231/pamap2+physical+activity+monitoring",
+      "license": "CC BY 4.0",
+      "citation": "Reiss & Stricker, ISWC 2012",
+      "raw": {
+        "path": "_zips/pamap2.zip",
+        "bytes": 688226940,
+        "sha256": "76b3580bd5a804121f507717cb498c66a312ef5c774f4a78ac470e6558add352"
+      },
+      "compact": {
+        "files": 9,
+        "bytes": 141643972,
+        "sha256": "3e9aa24e3e0a1015718352d7e765082fc7645f6836a72f2c218200222d44e33a"
+      }
+    },
+    "stress_predict": {
+      "title": "Stress-Predict Dataset",
+      "url": "https://github.com/italha-d/Stress-Predict-Dataset",
+      "license": "MIT",
+      "citation": "Iqbal et al., Sensors 2022",
+      "raw": {
+        "path": "_zips/stress_predict.zip",
+        "bytes": 24890854,
+        "sha256": "7a07b0a65b1d98d87ba53cee7385b610647eeb8a53b4d75180ef352db32110b0"
+      },
+      "compact": {
+        "files": 34,
+        "bytes": 27614130,
+        "sha256": "8f29423014d07648af24571c5a6b2b9c2f74a5f3c5390ff565f1da4cbaf55954"
+      }
+    },
+    "capture24": {
+      "title": "Capture-24 - Activity tracker dataset for human activity recognition",
+      "url": "https://ora.ox.ac.uk/objects/uuid:99d7c092-d865-4a19-b096-cc16440cd001",
+      "license": "CC BY 4.0",
+      "citation": "Chan Chang et al., Scientific Data 2024",
+      "raw": {
+        "path": "_zips/capture24.zip",
+        "bytes": 6902652480,
+        "sha256": "69740c22d3e000367988373336dc6486c10fe3f3f929811fd66e4d84861e40e2"
+      }
+    }
+  }
+}

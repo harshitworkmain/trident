@@ -1,57 +1,23 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Local run: API + web console on http://localhost:8000, plus (optionally) the live replay simulator.
+#   scripts/deployment/start_app.sh            # API only
+#   scripts/deployment/start_app.sh --demo     # API + virtual wearables streaming real recordings
+set -euo pipefail
+cd "$(dirname "$0")/../.."
 
-echo "========================================"
-echo "  Trident Emergency Response System"
-echo "========================================"
-echo
-
-echo "Checking Python installation..."
-if ! command -v python3 &> /dev/null; then
-    echo "ERROR: Python 3 is not installed or not in PATH"
-    echo "Please install Python 3.8+ and try again"
-    exit 1
+if [ ! -f src/frontend/web/dist/index.html ]; then
+  echo "Building the web console (src/frontend/web)..."
+  (cd src/frontend/web && npm ci && npm run build)
 fi
 
-echo "Python found! Checking virtual environment..."
-if [ ! -d "venv" ]; then
-    echo "Creating virtual environment..."
-    python3 -m venv venv
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Failed to create virtual environment"
-        exit 1
-    fi
+python -m uvicorn src.backend.app.main:app --host 127.0.0.1 --port 8000 &
+API_PID=$!
+trap 'kill $API_PID 2>/dev/null' EXIT
+sleep 4
+echo "TRIDENT running at http://localhost:8000  (API docs: /api/docs)"
+
+if [ "${1:-}" = "--demo" ]; then
+  python -m src.backend.app.tools.simulate --api http://localhost:8000 --speed 1 --with-sos
+else
+  wait $API_PID
 fi
-
-echo "Activating virtual environment..."
-source venv/bin/activate
-if [ $? -ne 0 ]; then
-    echo "ERROR: Failed to activate virtual environment"
-    exit 1
-fi
-
-echo "Installing/updating dependencies..."
-pip install -r requirements.txt
-if [ $? -ne 0 ]; then
-    echo "ERROR: Failed to install dependencies"
-    exit 1
-fi
-
-echo
-echo "========================================"
-echo "  Starting Trident Emergency System"
-echo "========================================"
-echo
-echo "The application will start in a few seconds..."
-echo
-echo "Access URLs:"
-echo "  Main App:    http://localhost:5000"
-echo "  Dashboard:   http://localhost:5000/dashboard"
-echo "  Analytics:   http://localhost:5000/analytics"
-echo
-echo "Press Ctrl+C to stop the server"
-echo
-
-python app.py
-
-echo
-echo "Application stopped."

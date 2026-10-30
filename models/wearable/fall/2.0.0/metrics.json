@@ -1,0 +1,896 @@
+{
+  "metrics": {
+    "oof_calibrated": {
+      "log_loss": 0.01323477175900814,
+      "ece": 0.0005427579975396838,
+      "auroc": 0.994093578082319,
+      "macro_f1": 0.8668626390659155,
+      "macro_f1_ci95": [
+        0.842530248116319,
+        0.8862338433272199
+      ],
+      "f1_no_fall": 0.997070762133451,
+      "f1_fall": 0.7366545159983799,
+      "sensitivity": 0.6141274986493788,
+      "specificity": 0.9992884117675743,
+      "ppv": 0.9202590568710788,
+      "sensitivity_ci95": [
+        0.5544299640693917,
+        0.6655186076521931
+      ]
+    },
+    "oof_uncalibrated_argmax": {
+      "macro_f1": 0.89792433028043,
+      "balanced_accuracy": 0.9611664997455058,
+      "log_loss": 0.019849316279140078,
+      "ece": 0.005784943434529765
+    },
+    "per_dataset": {
+      "sisfall": {
+        "log_loss": 0.13162853185565385,
+        "ece": 0.007501313745961526,
+        "auroc": 0.9892893455645315,
+        "macro_f1": 0.8610444042617502,
+        "macro_f1_ci95": [
+          0.8343447102431267,
+          0.8852518371810303
+        ],
+        "f1_no_fall": 0.951892730092128,
+        "f1_fall": 0.7701960784313725,
+        "sensitivity": 0.6371107266435986,
+        "specificity": 0.9954214201228586,
+        "ppv": 0.9735624586913417,
+        "sensitivity_ci95": [
+          0.5766869069209811,
+          0.6942945913697638
+        ]
+      },
+      "upfall": {
+        "log_loss": 0.11316152747417543,
+        "ece": 0.011205609126142328,
+        "auroc": 0.9399832559815599,
+        "macro_f1": 0.7042848639032204,
+        "macro_f1_ci95": [
+          0.6445675297092999,
+          0.7608635267604837
+        ],
+        "f1_no_fall": 0.9797590075384341,
+        "f1_fall": 0.4288107202680067,
+        "sensitivity": 0.27350427350427353,
+        "specificity": 0.9998788466198207,
+        "ppv": 0.9922480620155039,
+        "sensitivity_ci95": [
+          0.1855207369304608,
+          0.3692255606388054
+        ]
+      }
+    },
+    "external": {
+      "datasets": [
+        "hifd"
+      ],
+      "log_loss": 0.20389253251323428,
+      "ece": 0.043116006992880304,
+      "auroc": 0.9735109001852651,
+      "macro_f1": 0.7161315169435164,
+      "macro_f1_ci95": [
+        0.6778562717049056,
+        0.7532794828257143
+      ],
+      "f1_no_fall": 0.9519885913484393,
+      "f1_fall": 0.48027444253859347,
+      "sensitivity": 0.33653846153846156,
+      "specificity": 0.9910920488287693,
+      "ppv": 0.8383233532934131,
+      "sensitivity_ci95": [
+        0.2706115836821947,
+        0.4023809523809524
+      ]
+    },
+    "heldout_daily_life": {
+      "people": 55,
+      "hours": 1403.29,
+      "events": 375,
+      "false_alarms_per_8h": 2.137839582456176,
+      "curve": [
+        {
+          "threshold": 0.5,
+          "events": 892,
+          "false_alarms_per_8h": 5.08520775346909
+        },
+        {
+          "threshold": 0.7,
+          "events": 421,
+          "false_alarms_per_8h": 2.4000812379041334
+        },
+        {
+          "threshold": 0.9,
+          "events": 138,
+          "false_alarms_per_8h": 0.7867249663438727
+        },
+        {
+          "threshold": 0.95,
+          "events": 66,
+          "false_alarms_per_8h": 0.37625976651228693
+        },
+        {
+          "threshold": 0.98,
+          "events": 24,
+          "false_alarms_per_8h": 0.13682173327719524
+        },
+        {
+          "threshold": 0.99,
+          "events": 13,
+          "false_alarms_per_8h": 0.0741117721918141
+        }
+      ]
+    }
+  },
+  "threshold_curve": [
+    {
+      "threshold": 0.3,
+      "oof_daily_false_alarms_per_8h": 4.976789122699531,
+      "oof_fall_event_sensitivity": 0.9084266926449099,
+      "macro_f1": 0.908890559783774,
+      "sensitivity": 0.8707455429497569,
+      "specificity": 0.9966280831727443,
+      "ppv": 0.7754390185229733
+    },
+    {
+      "threshold": 0.31,
+      "oof_daily_false_alarms_per_8h": 4.637462591606381,
+      "oof_fall_event_sensitivity": 0.9059912323429128,
+      "macro_f1": 0.9092436375783881,
+      "sensitivity": 0.8654781199351702,
+      "specificity": 0.9967527014164941,
+      "ppv": 0.7808920302217889
+    },
+    {
+      "threshold": 0.32,
+      "oof_daily_false_alarms_per_8h": 4.524353747908664,
+      "oof_fall_event_sensitivity": 0.9025815879201169,
+      "macro_f1": 0.9094089390700382,
+      "sensitivity": 0.8604808211777417,
+      "specificity": 0.9968592590452076,
+      "ppv": 0.78557336621455
+    },
+    {
+      "threshold": 0.33,
+      "oof_daily_false_alarms_per_8h": 4.185027216815515,
+      "oof_fall_event_sensitivity": 0.9006332196785193,
+      "macro_f1": 0.9104867205778344,
+      "sensitivity": 0.8562938951917882,
+      "specificity": 0.9970109682115115,
+      "ppv": 0.792995622263915
+    },
+    {
+      "threshold": 0.34,
+      "oof_daily_false_alarms_per_8h": 4.071918373117798,
+      "oof_fall_event_sensitivity": 0.8972235752557234,
+      "macro_f1": 0.9101590765995184,
+      "sensitivity": 0.8502160994057266,
+      "specificity": 0.9971048834096996,
+      "ppv": 0.7970372246138263
+    },
+    {
+      "threshold": 0.35,
+      "oof_daily_false_alarms_per_8h": 3.8457006857223646,
+      "oof_fall_event_sensitivity": 0.893326838772528,
+      "macro_f1": 0.9101880758922307,
+      "sensitivity": 0.8448136142625607,
+      "specificity": 0.9972096349769095,
+      "ppv": 0.801923076923077
+    },
+    {
+      "threshold": 0.36,
+      "oof_daily_false_alarms_per_8h": 3.2801564672337817,
+      "oof_fall_event_sensitivity": 0.8894301022893327,
+      "macro_f1": 0.91023007138693,
+      "sensitivity": 0.8386007563479201,
+      "specificity": 0.9973306410976519,
+      "ppv": 0.8077273318589827
+    },
+    {
+      "threshold": 0.37,
+      "oof_daily_false_alarms_per_8h": 3.053938779838348,
+      "oof_fall_event_sensitivity": 0.885046273745738,
+      "macro_f1": 0.9101126769208887,
+      "sensitivity": 0.8327930848190167,
+      "specificity": 0.9974335866033582,
+      "ppv": 0.8127059443785423
+    },
+    {
+      "threshold": 0.38,
+      "oof_daily_false_alarms_per_8h": 2.9408299361406316,
+      "oof_fall_event_sensitivity": 0.8811495372625426,
+      "macro_f1": 0.910125476331529,
+      "sensitivity": 0.82752566180443,
+      "specificity": 0.9975347260475608,
+      "ppv": 0.8178056593699946
+    },
+    {
+      "threshold": 0.39,
+      "oof_daily_false_alarms_per_8h": 2.9408299361406316,
+      "oof_fall_event_sensitivity": 0.8743302484169508,
+      "macro_f1": 0.9094254832497679,
+      "sensitivity": 0.8209076175040518,
+      "specificity": 0.9976159988152237,
+      "ppv": 0.8215733982157339
+    },
+    {
+      "threshold": 0.4,
+      "oof_daily_false_alarms_per_8h": 2.601503405047482,
+      "oof_fall_event_sensitivity": 0.8694593278129567,
+      "macro_f1": 0.9094014397388963,
+      "sensitivity": 0.8159103187466235,
+      "specificity": 0.9977099140134118,
+      "ppv": 0.8265152551648652
+    },
+    {
+      "threshold": 0.41,
+      "oof_daily_false_alarms_per_8h": 2.601503405047482,
+      "oof_fall_event_sensitivity": 0.8665367754505602,
+      "macro_f1": 0.9089490292537333,
+      "sensitivity": 0.809967585089141,
+      "specificity": 0.9977947989040818,
+      "ppv": 0.8308395677472984
+    },
+    {
+      "threshold": 0.42,
+      "oof_daily_false_alarms_per_8h": 2.3752857176520488,
+      "oof_fall_event_sensitivity": 0.8621529469069654,
+      "macro_f1": 0.9084374177013015,
+      "sensitivity": 0.8037547271745002,
+      "specificity": 0.9978814898562556,
+      "ppv": 0.8353453116226839
+    },
+    {
+      "threshold": 0.43,
+      "oof_daily_false_alarms_per_8h": 2.1490680302566156,
+      "oof_fall_event_sensitivity": 0.8606916707257671,
+      "macro_f1": 0.9080898656905674,
+      "sensitivity": 0.7987574284170719,
+      "specificity": 0.997955538377904,
+      "ppv": 0.8393414703377803
+    },
+    {
+      "threshold": 0.44,
+      "oof_daily_false_alarms_per_8h": 1.9228503428611823,
+      "oof_fall_event_sensitivity": 0.8587433024841695,
+      "macro_f1": 0.9079174288107628,
+      "sensitivity": 0.7944354403025392,
+      "specificity": 0.9980277808380487,
+      "ppv": 0.8434184112417551
+    },
+    {
+      "threshold": 0.45,
+      "oof_daily_false_alarms_per_8h": 1.9228503428611823,
+      "oof_fall_event_sensitivity": 0.855820750121773,
+      "macro_f1": 0.9076016119088502,
+      "sensitivity": 0.7898433279308482,
+      "specificity": 0.9980964111751861,
+      "ppv": 0.8472906403940886
+    },
+    {
+      "threshold": 0.46,
+      "oof_daily_false_alarms_per_8h": 1.9228503428611823,
+      "oof_fall_event_sensitivity": 0.8533852898197759,
+      "macro_f1": 0.9067618644441295,
+      "sensitivity": 0.7837655321447866,
+      "specificity": 0.9981614293893164,
+      "ppv": 0.85075502125788
+    },
+    {
+      "threshold": 0.47,
+      "oof_daily_false_alarms_per_8h": 1.8097414991634657,
+      "oof_fall_event_sensitivity": 0.8494885533365806,
+      "macro_f1": 0.9061404590415605,
+      "sensitivity": 0.7782279848730416,
+      "specificity": 0.998230059726454,
+      "ppv": 0.854642539305844
+    },
+    {
+      "threshold": 0.48,
+      "oof_daily_false_alarms_per_8h": 1.8097414991634657,
+      "oof_fall_event_sensitivity": 0.8470530930345835,
+      "macro_f1": 0.9054931617066343,
+      "sensitivity": 0.773095623987034,
+      "specificity": 0.9982896597560733,
+      "ppv": 0.8580422725228601
+    },
+    {
+      "threshold": 0.49,
+      "oof_daily_false_alarms_per_8h": 1.6966326554657492,
+      "oof_fall_event_sensitivity": 0.8431563565513882,
+      "macro_f1": 0.9049090006408731,
+      "sensitivity": 0.7683684494867639,
+      "specificity": 0.9983456476626855,
+      "ppv": 0.8613171839515519
+    },
+    {
+      "threshold": 0.5,
+      "oof_daily_false_alarms_per_8h": 1.6966326554657492,
+      "oof_fall_event_sensitivity": 0.8397467121285923,
+      "macro_f1": 0.903654269648676,
+      "sensitivity": 0.762020529443544,
+      "specificity": 0.9983926052617795,
+      "ppv": 0.8637477036129823
+    },
+    {
+      "threshold": 0.51,
+      "oof_daily_false_alarms_per_8h": 1.5835238117680326,
+      "oof_fall_event_sensitivity": 0.835849975645397,
+      "macro_f1": 0.9025602612118544,
+      "sensitivity": 0.7562128579146408,
+      "specificity": 0.9984395628608737,
+      "ppv": 0.8663159523441126
+    },
+    {
+      "threshold": 0.52,
+      "oof_daily_false_alarms_per_8h": 1.5835238117680326,
+      "oof_fall_event_sensitivity": 0.8324403312226011,
+      "macro_f1": 0.9016332753591502,
+      "sensitivity": 0.7504051863857374,
+      "specificity": 0.9984973568289894,
+      "ppv": 0.8697557921102066
+    },
+    {
+      "threshold": 0.53,
+      "oof_daily_false_alarms_per_8h": 1.5835238117680326,
+      "oof_fall_event_sensitivity": 0.8275694106186069,
+      "macro_f1": 0.9003271847365937,
+      "sensitivity": 0.7439222042139384,
+      "specificity": 0.9985461204895871,
+      "ppv": 0.8724853476952321
+    },
+    {
+      "threshold": 0.54,
+      "oof_daily_false_alarms_per_8h": 1.4704149680703158,
+      "oof_fall_event_sensitivity": 0.821724305893814,
+      "macro_f1": 0.8992446710778204,
+      "sensitivity": 0.7377093462992976,
+      "specificity": 0.9986039144577029,
+      "ppv": 0.8760224538893344
+    },
+    {
+      "threshold": 0.55,
+      "oof_daily_false_alarms_per_8h": 1.4704149680703158,
+      "oof_fall_event_sensitivity": 0.8168533852898198,
+      "macro_f1": 0.8984473375765225,
+      "sensitivity": 0.7328471096704484,
+      "specificity": 0.9986526781183006,
+      "ppv": 0.8791315618924174
+    },
+    {
+      "threshold": 0.56,
+      "oof_daily_false_alarms_per_8h": 1.4704149680703158,
+      "oof_fall_event_sensitivity": 0.8144179249878227,
+      "macro_f1": 0.8973879413705732,
+      "sensitivity": 0.7275796866558617,
+      "specificity": 0.9986942175328839,
+      "ppv": 0.8816693944353519
+    },
+    {
+      "threshold": 0.57,
+      "oof_daily_false_alarms_per_8h": 1.4704149680703158,
+      "oof_fall_event_sensitivity": 0.8114953726254263,
+      "macro_f1": 0.896453718312149,
+      "sensitivity": 0.7221772015126958,
+      "specificity": 0.9987465933164889,
+      "ppv": 0.8851183578877669
+    },
+    {
+      "threshold": 0.58,
+      "oof_daily_false_alarms_per_8h": 1.4704149680703158,
+      "oof_fall_event_sensitivity": 0.8080857282026302,
+      "macro_f1": 0.8951315947299974,
+      "sensitivity": 0.7160994057266342,
+      "specificity": 0.9987899387925756,
+      "ppv": 0.8878097789685198
+    },
+    {
+      "threshold": 0.59,
+      "oof_daily_false_alarms_per_8h": 1.3573061243725992,
+      "oof_fall_event_sensitivity": 0.8027277155382367,
+      "macro_f1": 0.8933173961801419,
+      "sensitivity": 0.7079956780118855,
+      "specificity": 0.9988459266991878,
+      "ppv": 0.891345009352151
+    },
+    {
+      "threshold": 0.6,
+      "oof_daily_false_alarms_per_8h": 1.3573061243725992,
+      "oof_fall_event_sensitivity": 0.798343886994642,
+      "macro_f1": 0.8921183045321326,
+      "sensitivity": 0.7024581307401405,
+      "specificity": 0.998887466113771,
+      "ppv": 0.8941034897713598
+    },
+    {
+      "threshold": 0.61,
+      "oof_daily_false_alarms_per_8h": 1.3573061243725992,
+      "oof_fall_event_sensitivity": 0.7939600584510472,
+      "macro_f1": 0.89050131320941,
+      "sensitivity": 0.695569962182604,
+      "specificity": 0.9989326176513615,
+      "ppv": 0.8970562619752657
+    },
+    {
+      "threshold": 0.62,
+      "oof_daily_false_alarms_per_8h": 1.3573061243725992,
+      "oof_fall_event_sensitivity": 0.7881149537262543,
+      "macro_f1": 0.8887343948037334,
+      "sensitivity": 0.6878714208535927,
+      "specificity": 0.9989867994964701,
+      "ppv": 0.9007782101167315
+    },
+    {
+      "threshold": 0.63,
+      "oof_daily_false_alarms_per_8h": 1.2441972806748827,
+      "oof_fall_event_sensitivity": 0.7876278616658549,
+      "macro_f1": 0.8871978011414912,
+      "sensitivity": 0.6819286871961102,
+      "specificity": 0.9990193086035352,
+      "ppv": 0.9028969957081545
+    },
+    {
+      "threshold": 0.64,
+      "oof_daily_false_alarms_per_8h": 1.2441972806748827,
+      "oof_fall_event_sensitivity": 0.7827569410618607,
+      "macro_f1": 0.885276396570527,
+      "sensitivity": 0.6747703943814155,
+      "specificity": 0.9990554298336075,
+      "ppv": 0.9052364558796884
+    },
+    {
+      "threshold": 0.65,
+      "oof_daily_false_alarms_per_8h": 1.131088436977166,
+      "oof_fall_event_sensitivity": 0.7744763760350706,
+      "macro_f1": 0.8825648257188308,
+      "sensitivity": 0.6657212317666127,
+      "specificity": 0.999086132879169,
+      "ppv": 0.9068997240110396
+    },
+    {
+      "threshold": 0.66,
+      "oof_daily_false_alarms_per_8h": 1.131088436977166,
+      "oof_fall_event_sensitivity": 0.7696054554310765,
+      "macro_f1": 0.8811547332352807,
+      "sensitivity": 0.6597784981091303,
+      "specificity": 0.9991294783552559,
+      "ppv": 0.9101919135457425
+    },
+    {
+      "threshold": 0.67,
+      "oof_daily_false_alarms_per_8h": 1.0179795932794495,
+      "oof_fall_event_sensitivity": 0.7647345348270823,
+      "macro_f1": 0.8790014718047363,
+      "sensitivity": 0.6527552674230146,
+      "specificity": 0.9991529571548029,
+      "ppv": 0.9115428140324406
+    },
+    {
+      "threshold": 0.68,
+      "oof_daily_false_alarms_per_8h": 1.0179795932794495,
+      "oof_fall_event_sensitivity": 0.7564539698002922,
+      "macro_f1": 0.8762080974658274,
+      "sensitivity": 0.6443814154511075,
+      "specificity": 0.9991692117083355,
+      "ppv": 0.912062703116039
+    },
+    {
+      "threshold": 0.69,
+      "oof_daily_false_alarms_per_8h": 1.0179795932794495,
+      "oof_fall_event_sensitivity": 0.7486604968339016,
+      "macro_f1": 0.8739154343995977,
+      "sensitivity": 0.6373581847649918,
+      "specificity": 0.9991872723233717,
+      "ppv": 0.9129425420777714
+    },
+    {
+      "threshold": 0.7,
+      "oof_daily_false_alarms_per_8h": 1.0179795932794495,
+      "oof_fall_event_sensitivity": 0.7408670238675109,
+      "macro_f1": 0.8711435709034396,
+      "sensitivity": 0.6283090221501891,
+      "specificity": 0.999223393553444,
+      "ppv": 0.91538764266037
+    },
+    {
+      "threshold": 0.71,
+      "oof_daily_false_alarms_per_8h": 1.0179795932794495,
+      "oof_fall_event_sensitivity": 0.7355090112031174,
+      "macro_f1": 0.8691846979463747,
+      "sensitivity": 0.62182603997839,
+      "specificity": 0.999252290537502,
+      "ppv": 0.9174970107612594
+    },
+    {
+      "threshold": 0.72,
+      "oof_daily_false_alarms_per_8h": 0.9048707495817329,
+      "oof_fall_event_sensitivity": 0.7267413541159279,
+      "macro_f1": 0.8668626390659155,
+      "sensitivity": 0.6141274986493788,
+      "specificity": 0.9992884117675743,
+      "ppv": 0.9202590568710788
+    },
+    {
+      "threshold": 0.73,
+      "oof_daily_false_alarms_per_8h": 0.7917619058840163,
+      "oof_fall_event_sensitivity": 0.7184607890891378,
+      "macro_f1": 0.864215462360825,
+      "sensitivity": 0.6053484602917342,
+      "specificity": 0.9993317572436612,
+      "ppv": 0.9237427864798021
+    },
+    {
+      "threshold": 0.74,
+      "oof_daily_false_alarms_per_8h": 0.6786530621862996,
+      "oof_fall_event_sensitivity": 0.7111544081831466,
+      "macro_f1": 0.8610841245997611,
+      "sensitivity": 0.595894111291194,
+      "specificity": 0.9993642663507263,
+      "ppv": 0.926112510495382
+    },
+    {
+      "threshold": 0.75,
+      "oof_daily_false_alarms_per_8h": 0.6786530621862996,
+      "oof_fall_event_sensitivity": 0.7062834875791525,
+      "macro_f1": 0.8581979889773201,
+      "sensitivity": 0.5872501350621285,
+      "specificity": 0.9993949693962878,
+      "ppv": 0.9284646594063635
+    },
+    {
+      "threshold": 0.76,
+      "oof_daily_false_alarms_per_8h": 0.565544218488583,
+      "oof_fall_event_sensitivity": 0.6970287384315635,
+      "macro_f1": 0.8545037564424851,
+      "sensitivity": 0.5769854132901134,
+      "specificity": 0.9994184481958348,
+      "ppv": 0.9299085764040053
+    },
+    {
+      "threshold": 0.77,
+      "oof_daily_false_alarms_per_8h": 0.565544218488583,
+      "oof_fall_event_sensitivity": 0.6863127131027764,
+      "macro_f1": 0.8506803103691967,
+      "sensitivity": 0.5663155051323608,
+      "specificity": 0.9994473451798928,
+      "ppv": 0.9319848855301178
+    },
+    {
+      "threshold": 0.78,
+      "oof_daily_false_alarms_per_8h": 0.45243537479086643,
+      "oof_fall_event_sensitivity": 0.6780321480759863,
+      "macro_f1": 0.84684713040037,
+      "sensitivity": 0.5559157212317666,
+      "specificity": 0.9994726300409434,
+      "ppv": 0.9337568058076225
+    },
+    {
+      "threshold": 0.79,
+      "oof_daily_false_alarms_per_8h": 0.3393265310931498,
+      "oof_fall_event_sensitivity": 0.6687773989283975,
+      "macro_f1": 0.8439188716054675,
+      "sensitivity": 0.5475418692598595,
+      "specificity": 0.9995051391480085,
+      "ppv": 0.9366913123844732
+    },
+    {
+      "threshold": 0.8,
+      "oof_daily_false_alarms_per_8h": 0.3393265310931498,
+      "oof_fall_event_sensitivity": 0.6609839259620068,
+      "macro_f1": 0.8397441597538132,
+      "sensitivity": 0.536871961102107,
+      "specificity": 0.9995231997630447,
+      "ppv": 0.937721160651097
+    },
+    {
+      "threshold": 0.81,
+      "oof_daily_false_alarms_per_8h": 0.3393265310931498,
+      "oof_fall_event_sensitivity": 0.6536775450560156,
+      "macro_f1": 0.8362316261606186,
+      "sensitivity": 0.5275526742301458,
+      "specificity": 0.999550290685599,
+      "ppv": 0.940072202166065
+    },
+    {
+      "threshold": 0.82,
+      "oof_daily_false_alarms_per_8h": 0.3393265310931498,
+      "oof_fall_event_sensitivity": 0.6419873356064296,
+      "macro_f1": 0.8313787805591781,
+      "sensitivity": 0.5155321447866018,
+      "specificity": 0.9995701573621388,
+      "ppv": 0.9413070283600493
+    },
+    {
+      "threshold": 0.83,
+      "oof_daily_false_alarms_per_8h": 0.3393265310931498,
+      "oof_fall_event_sensitivity": 0.6317584023380419,
+      "macro_f1": 0.8269747287312612,
+      "sensitivity": 0.5043219881145327,
+      "specificity": 0.9996008604077004,
+      "ppv": 0.9441213653603034
+    },
+    {
+      "threshold": 0.84,
+      "oof_daily_false_alarms_per_8h": 0.22621768739543321,
+      "oof_fall_event_sensitivity": 0.6200681928884559,
+      "macro_f1": 0.821975490630419,
+      "sensitivity": 0.49176121015667207,
+      "specificity": 0.9996369816377727,
+      "ppv": 0.9476834981780323
+    },
+    {
+      "threshold": 0.85,
+      "oof_daily_false_alarms_per_8h": 0.22621768739543321,
+      "oof_fall_event_sensitivity": 0.6113005358012664,
+      "macro_f1": 0.8179896519701941,
+      "sensitivity": 0.48190167477039436,
+      "specificity": 0.9996658786218305,
+      "ppv": 0.9507061017852385
+    },
+    {
+      "threshold": 0.86,
+      "oof_daily_false_alarms_per_8h": 0.22621768739543321,
+      "oof_fall_event_sensitivity": 0.6000974184120799,
+      "macro_f1": 0.8135417659337693,
+      "sensitivity": 0.471366828741221,
+      "specificity": 0.9996893574213777,
+      "ppv": 0.9530311305297652
+    },
+    {
+      "threshold": 0.87,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.5840233804188991,
+      "macro_f1": 0.8077127587446431,
+      "sensitivity": 0.45786061588330634,
+      "specificity": 0.9997182544054355,
+      "ppv": 0.9560067681895094
+    },
+    {
+      "threshold": 0.88,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.573307355090112,
+      "macro_f1": 0.8015655269861228,
+      "sensitivity": 0.44394921663965425,
+      "specificity": 0.9997471513894934,
+      "ppv": 0.9591479428071199
+    },
+    {
+      "threshold": 0.89,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.5601558694593278,
+      "macro_f1": 0.7951504579471211,
+      "sensitivity": 0.4297676931388439,
+      "specificity": 0.9997760483735513,
+      "ppv": 0.9624924379915305
+    },
+    {
+      "threshold": 0.9,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.54164637116415,
+      "macro_f1": 0.7873022424013485,
+      "sensitivity": 0.413290113452188,
+      "specificity": 0.9997959150500911,
+      "ppv": 0.9643870154427986
+    },
+    {
+      "threshold": 0.91,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.5265465172917682,
+      "macro_f1": 0.7789782650837838,
+      "sensitivity": 0.39627228525121555,
+      "specificity": 0.9998157817266309,
+      "ppv": 0.9664031620553359
+    },
+    {
+      "threshold": 0.92,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.5080370189965904,
+      "macro_f1": 0.7701152828291521,
+      "sensitivity": 0.37844408427876824,
+      "specificity": 0.9998428726491851,
+      "ppv": 0.9698857736240913
+    },
+    {
+      "threshold": 0.93,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.48611787627861663,
+      "macro_f1": 0.7584467128356158,
+      "sensitivity": 0.35615883306320906,
+      "specificity": 0.9998609332642214,
+      "ppv": 0.9716285924834193
+    },
+    {
+      "threshold": 0.94,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.4651729176814418,
+      "macro_f1": 0.7442090809323625,
+      "sensitivity": 0.32982171799027554,
+      "specificity": 0.9998880241867757,
+      "ppv": 0.9752396166134185
+    },
+    {
+      "threshold": 0.95,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.446663419386264,
+      "macro_f1": 0.7314358226080417,
+      "sensitivity": 0.3072663425175581,
+      "specificity": 0.9999042787403082,
+      "ppv": 0.977233676975945
+    },
+    {
+      "threshold": 0.9525,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.4378957622990745,
+      "macro_f1": 0.7269443742087762,
+      "sensitivity": 0.29956780118854676,
+      "specificity": 0.9999078908633154,
+      "ppv": 0.9775231379462318
+    },
+    {
+      "threshold": 0.955,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.42912810521188505,
+      "macro_f1": 0.7212850575502986,
+      "sensitivity": 0.2899783900594273,
+      "specificity": 0.9999133090478263,
+      "ppv": 0.9781321184510251
+    },
+    {
+      "threshold": 0.9575,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.4237700925474915,
+      "macro_f1": 0.7182417615189469,
+      "sensitivity": 0.2847109670448406,
+      "specificity": 0.999924145416848,
+      "ppv": 0.9804651162790697
+    },
+    {
+      "threshold": 0.96,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.4169508037018997,
+      "macro_f1": 0.714354731179349,
+      "sensitivity": 0.2782279848730416,
+      "specificity": 0.9999295636013589,
+      "ppv": 0.9814197236779418
+    },
+    {
+      "threshold": 0.9625,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.4023380418899172,
+      "macro_f1": 0.7072381863837385,
+      "sensitivity": 0.26647757968665586,
+      "specificity": 0.9999422060318842,
+      "ppv": 0.9840399002493766
+    },
+    {
+      "threshold": 0.965,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.3925962006819289,
+      "macro_f1": 0.702782327911072,
+      "sensitivity": 0.2593192868719611,
+      "specificity": 0.9999458181548915,
+      "ppv": 0.9846153846153847
+    },
+    {
+      "threshold": 0.9675,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.3828543594739406,
+      "macro_f1": 0.6967378498478205,
+      "sensitivity": 0.2497298757428417,
+      "specificity": 0.9999512363394023,
+      "ppv": 0.9856076759061834
+    },
+    {
+      "threshold": 0.97,
+      "oof_daily_false_alarms_per_8h": 0.11310884369771661,
+      "oof_fall_event_sensitivity": 0.37067705796395517,
+      "macro_f1": 0.6902441679366551,
+      "sensitivity": 0.23960021609940574,
+      "specificity": 0.9999566545239131,
+      "ppv": 0.9866518353726362
+    },
+    {
+      "threshold": 0.9725,
+      "oof_daily_false_alarms_per_8h": 0.0,
+      "oof_fall_event_sensitivity": 0.3584997564539698,
+      "macro_f1": 0.6833710084179448,
+      "sensitivity": 0.2290653700702323,
+      "specificity": 0.999962072708424,
+      "ppv": 0.9877693651718114
+    },
+    {
+      "threshold": 0.975,
+      "oof_daily_false_alarms_per_8h": 0.0,
+      "oof_fall_event_sensitivity": 0.3433999025815879,
+      "macro_f1": 0.6756243169505128,
+      "sensitivity": 0.21745002701242572,
+      "specificity": 0.9999656848314312,
+      "ppv": 0.9883364027010436
+    },
+    {
+      "threshold": 0.9775,
+      "oof_daily_false_alarms_per_8h": 0.0,
+      "oof_fall_event_sensitivity": 0.32878714076960547,
+      "macro_f1": 0.667632742938773,
+      "sensitivity": 0.20569962182603999,
+      "specificity": 0.9999692969544385,
+      "ppv": 0.9889610389610389
+    },
+    {
+      "threshold": 0.98,
+      "oof_daily_false_alarms_per_8h": 0.0,
+      "oof_fall_event_sensitivity": 0.3146614710180224,
+      "macro_f1": 0.6584922404514577,
+      "sensitivity": 0.19259859535386278,
+      "specificity": 0.9999692969544385,
+      "ppv": 0.9882189882189882
+    },
+    {
+      "threshold": 0.9825,
+      "oof_daily_false_alarms_per_8h": 0.0,
+      "oof_fall_event_sensitivity": 0.2995616171456405,
+      "macro_f1": 0.6494160958606057,
+      "sensitivity": 0.17976769313884386,
+      "specificity": 0.999976521200453,
+      "ppv": 0.9903273809523809
+    },
+    {
+      "threshold": 0.985,
+      "oof_daily_false_alarms_per_8h": 0.0,
+      "oof_fall_event_sensitivity": 0.28056502679006334,
+      "macro_f1": 0.6358822657727005,
+      "sensitivity": 0.1612641815235008,
+      "specificity": 0.9999783272619566,
+      "ppv": 0.9900497512437811
+    },
+    {
+      "threshold": 0.9875,
+      "oof_daily_false_alarms_per_8h": 0.0,
+      "oof_fall_event_sensitivity": 0.2635168046760838,
+      "macro_f1": 0.6258347105721889,
+      "sensitivity": 0.14789303079416533,
+      "specificity": 0.9999801333234603,
+      "ppv": 0.9900542495479204
+    },
+    {
+      "threshold": 0.99,
+      "oof_daily_false_alarms_per_8h": 0.0,
+      "oof_fall_event_sensitivity": 0.23331709693132002,
+      "macro_f1": 0.6096147751472627,
+      "sensitivity": 0.12695840086439764,
+      "specificity": 0.9999819393849638,
+      "ppv": 0.9894736842105263
+    },
+    {
+      "threshold": 0.9925,
+      "oof_daily_false_alarms_per_8h": 0.0,
+      "oof_fall_event_sensitivity": 0.20944958597174865,
+      "macro_f1": 0.5975301875552623,
+      "sensitivity": 0.11183144246353323,
+      "specificity": 0.9999855515079711,
+      "ppv": 0.9904306220095693
+    },
+    {
+      "threshold": 0.995,
+      "oof_daily_false_alarms_per_8h": 0.0,
+      "oof_fall_event_sensitivity": 0.16950803701899658,
+      "macro_f1": 0.5749600108258006,
+      "sensitivity": 0.0846839546191248,
+      "specificity": 0.9999873575694747,
+      "ppv": 0.9889589905362776
+    },
+    {
+      "threshold": 0.9975,
+      "oof_daily_false_alarms_per_8h": 0.0,
+      "oof_fall_event_sensitivity": 0.11836337067705796,
+      "macro_f1": 0.5485798218667042,
+      "sensitivity": 0.05456509994597515,
+      "specificity": 0.9999945818154892,
+      "ppv": 0.9926289926289926
+    }
+  ]
+}

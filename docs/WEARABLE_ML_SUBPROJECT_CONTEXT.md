@@ -1,44 +1,43 @@
-# TRIDENT Sub-Project Context & Agent Memory: Wearable Live Telemetry ML Predictive Engine
+# TRIDENT project context, datasets and iteration log
 
-## 1. Sub-Project Overview & Agent Role Division
+The project's memory: what TRIDENT is today, where each part is documented, the dataset inventory
+with download links, and the full iteration log. Update the log after every significant change.
 
-This document serves as the persistent memory and technical blueprint for the **TRIDENT Wearable Live Telemetry ML Predictive Model Sub-Project**.
+## 1. Current state (2026-10-31)
 
-### Agent Role Division
-- **Gemini (System Architect & Planner)**:
-  - Responsible for: Hardware specs analysis, system design, feature engineering matrix, physiological trauma mapping, dataset selection, architecture planning, edge-case safety net design, git portability strategy, and maintaining/updating this context memory document after every iteration.
-  - **Constraint**: **NO code generation or script writing**. Gemini plans and designs only.
-- **Claude Opus (Code Generator & Implementer)**:
-  - Responsible for: Writing Python scripts (`dataset_fusion_synthesizer.py`, `train_wearable_model.py`, `wearable_model.py`), updating Flask backend routes in `main.py`, modifying Jinja2 HTML templates (`platform.html`), CSS/JS assets, and executing Git commits & pushes to GitHub.
-  - **Constraint**: Executes code implementation based on the blueprints established in this document and `implementation_plan.md`.
+TRIDENT is a flood and water-rescue command platform. Development phases P0–P8 are complete:
+- a hybrid wearable ML system: 5 Tier-1 heads trained on real data, plus a Tier-2 fusion state machine
+- a FastAPI command server and a React operations console
+- weather forecasting
+- ESP32 band firmware 2.2.0 with an SOS button
+- ROV control, with a computer-vision camera feed
+- a full QA round: functional, security, load and failure testing, all fixes applied, 128 tests passing
 
----
+Future versions follow the roadmap in [RESILIENCE_AND_FUTURE_WORK.md](RESILIENCE_AND_FUTURE_WORK.md),
+Part II.
 
-## 2. Hardware Analysis & Portability Strategy (MSI Modern 14 C12M)
+## 2. Documentation map
 
-### Current Development Laptop System Context
-- **CPU**: 12th Gen Intel Core i5-1235U (10 Cores / 12 Threads: 2 P-Cores + 8 E-Cores).
-- **Physical System Memory**: **8 GB Soldered DDR4-3200 RAM (Non-upgradeable)**. Usable RAM $\approx 7.5\text{ GB}$.
-- **GPU**: Intel Integrated Graphics (Alder Lake GT2), shared system memory (no discrete NVIDIA/AMD GPU).
-- **Storage**: Micron 512GB NVMe SSD ($\approx 370\text{ GB}$ free ext4 space).
-- **OS**: Ubuntu 22.04.5 LTS (x86_64), Linux kernel 6.8.0.
+| Topic | Document |
+|---|---|
+| System overview | [ARCHITECTURE.md](ARCHITECTURE.md) |
+| Install and run | [GETTING_STARTED.md](GETTING_STARTED.md) |
+| Deploy | [DEPLOYMENT.md](DEPLOYMENT.md) |
+| Using the console and the band | [USER_GUIDE.md](USER_GUIDE.md) |
+| API contract and backend design | [PLATFORM_DESIGN.md](PLATFORM_DESIGN.md) |
+| Wearable ML design and decisions | [WEARABLE_ML_ARCHITECTURE.md](WEARABLE_ML_ARCHITECTURE.md) |
+| Training and retraining | [TRAINING_GUIDE.md](TRAINING_GUIDE.md) |
+| Weather model | [WEATHER_MODEL.md](WEATHER_MODEL.md) |
+| Generated results | [reports/](reports/): data report, tournament, final models, fusion replay, rhythm external test |
+| Resilience, limits, roadmap | [RESILIENCE_AND_FUTURE_WORK.md](RESILIENCE_AND_FUTURE_WORK.md) |
 
-### Hardware Analysis & Training Deferral Decision
-> [!IMPORTANT]
-> **Decision: Defer Model Training to High-RAM / GPU Compute Machine**
-> 
-> Loading 2.7 GB `PPG_FieldStudy`, 17.6 GB `WESAD` pickles, and 104 MB `MIT-BIH` simultaneously into Python memory for sliding-window matrix creation exceeds the 7.5 GB usable physical RAM limit, risking Linux OOM crashes or severe SSD swap thrashing.
-> 
-> **Portability Workflow**:
-> 1. All pre-training Python scripts (`dataset_fusion_synthesizer.py`, `train_wearable_model.py`, `wearable_model.py`), Flask backend routes (`main.py`), and frontend UI templates/styles (`platform.html`, `dashboard.js`, `main_styles.css`) will be completely coded, integrated, and verified on this machine by **Claude Opus**.
-> 2. All code and documentation will be committed and pushed to GitHub (`harshitworkmain/trident`).
-> 3. Training will be executed on a target high-RAM / GPU machine by pulling the repository and running `python src/ml/train_wearable_model.py`.
-
----
+The v1 planning sections that used to live here (agent roles, laptop hardware analysis, the synthetic
+8-state taxonomy, the feature spec and the Kaggle tournament plan) were superseded by the v2 hybrid
+design on 2026-10-30. They are kept in git history.
 
 ## 3. Benchmark Datasets Inventory & Direct URLs
 
-The sub-project utilizes 4 open-source benchmark datasets stored locally at `/home/harshit/Documents/projects-all/trident/data/raw/wearable_ml_datasets/` plus 2 cloned GitHub repositories:
+The datasets are stored locally under `data/raw/wearable_ml_datasets/` (not in git). Subsections A–B are the original v1 inventory, and their state mappings use the old v1 taxonomy. Which v2 head each dataset trains is in [WEARABLE_ML_ARCHITECTURE.md](WEARABLE_ML_ARCHITECTURE.md) §5 and [reports/WEARABLE_DATA_REPORT.md](reports/WEARABLE_DATA_REPORT.md).
 
 ### A. Local Datasets & Direct Access URLs
 1. **MIT-BIH Arrhythmia Database** (`mit-bih-arrhythmia-database-1.0.0/`):
@@ -52,247 +51,98 @@ The sub-project utilizes 4 open-source benchmark datasets stored locally at `/ho
    - 15 subjects, Empatica E4 wrist signals for `HEMORRHAGIC_SHOCK` & `HYPOTHERMIA_RISK` (Reiss et al. 2019).
 4. **HIFD (HR + IMU Fall Detection)** (`HR_IMU_falldetection_dataset-master/`):
    - 🔗 **Direct Repository**: [https://github.com/nhoyh/HR_IMU_falldetection_dataset](https://github.com/nhoyh/HR_IMU_falldetection_dataset) (IEEE: `8970371`)
-   - 📄 **Research Paper PDF**: [Cluster-Analysis-Based_User-Adaptive_Fall_Detection_Using_Fusion_of_Heart_Rate_Sensor_and_Accelerometer_in_a_Wearable_Device.pdf](file:///home/harshit/Documents/projects-all/trident/data/raw/wearable_ml_datasets/HR_IMU_falldetection_dataset-master/Cluster-Analysis-Based_User-Adaptive_Fall_Detection_Using_Fusion_of_Heart_Rate_Sensor_and_Accelerometer_in_a_Wearable_Device.pdf)
+   - 📄 **Research Paper PDF**: Cluster-Analysis-Based_User-Adaptive_Fall_Detection_Using_Fusion_of_Heart_Rate_Sensor_and_Accelerometer_in_a_Wearable_Device.pdf (`data/raw/wearable_ml_datasets/HR_IMU_falldetection_dataset-master/Cluster-Analysis-Based_User-Adaptive_Fall_Detection_Using_Fusion_of_Heart_Rate_Sensor_and_Accelerometer_in_a_Wearable_Device.pdf`, local only)
    - 21 subjects, raw `.mat` wrist Accel + Gyro + HR for `CONCUSSIVE_STASIS` & `CRUSH_ENTRAPMENT` (Nho et al. IEEE Access 2020).
 
 ### B. Remote GitHub Repositories
-1. **SisFall Benchmark Repository**: 🔗 [https://github.com/mojtabaSefidi/Fall-Detection-System.git](https://github.com/mojtabaSefidi/Fall-Detection-System.git) (Cloned at `sisfall/`).
-2. **UP-Fall Multimodal System**: 🔗 [https://github.com/jpnm561/HAR-UP.git](https://github.com/jpnm561/HAR-UP.git) (Cloned at `upfall/`).
+1. **SisFall Benchmark Repository**: 🔗 [https://github.com/mojtabaSefidi/Fall-Detection-System.git](https://github.com/mojtabaSefidi/Fall-Detection-System.git) (Cloned at `sisfall/`). Contains code only, not the SisFall data.
+2. **UP-Fall Multimodal System**: 🔗 [https://github.com/jpnm561/HAR-UP.git](https://github.com/jpnm561/HAR-UP.git) (Cloned at `upfall/`). Contains code only; the data is on Google Drive (see C.3).
+
+### C. Datasets Added in v2 (2026-10-30) & Corrected Download Links
+1. **WESAD — working download link**: the UCI zip only contains a pointer file, and the link inside it (`.../s/pYjSgfOVs6Ntahr/download`) returns 404.
+   - Working official Sciebo link: 🔗 [https://uni-siegen.sciebo.de/s/HGdUkoNlW1Ub0Gx/download](https://uni-siegen.sciebo.de/s/HGdUkoNlW1Ub0Gx/download) (WESAD.zip, 2.25 GB, 17.6 GB unzipped).
+2. **SisFall data** (38 subjects: 23 young + 15 elderly; waist ADXL345 + ITG3200 at 200 Hz; 4,505 trials; 19 ADLs + 15 fall types; Sucerquia et al., Sensors 2017, DOI `10.3390/s17010198`):
+   - The original host 🔗 [http://sistemic.udea.edu.co/en/investigacion/proyectos/english-falls/](http://sistemic.udea.edu.co/en/investigacion/proyectos/english-falls/) is offline.
+   - Data taken from the GitHub mirror 🔗 [https://github.com/Sibonile7/Elderly-Fall-Detection-using-AI-SisFall-Dataset-](https://github.com/Sibonile7/Elderly-Fall-Detection-using-AI-SisFall-Dataset-) (folder `data/raw/SisFall`).
+   - Verified complete against the published counts (4,505 trials, 38 subjects).
+3. **UP-Fall sensor data** (17 subjects, 11 activities × 3 trials, wrist IMU ~20 Hz; Martínez-Villaseñor et al., Sensors 2019, DOI `10.3390/s19091988`):
+   - Official site 🔗 [https://sites.google.com/up.edu.mx/har-up/](https://sites.google.com/up.edu.mx/har-up/).
+   - The 561 per-trial "DataSet" CSVs were downloaded through their direct Google Drive links (`drive.usercontent.google.com/download?id=<id>&export=download`).
+   - Camera, optical-flow and feature files were skipped.
+   - 560/561 trials obtained: Subject17-Activity11-Trial3 is not published, and Subject8-Activity11-Trials 2–3 are header-only upstream.
+4. **MIT-BIH direct zip**: 🔗 [https://physionet.org/static/published-projects/mitdb/mit-bih-arrhythmia-database-1.0.0.zip](https://physionet.org/static/published-projects/mitdb/mit-bih-arrhythmia-database-1.0.0.zip)
+5. **PPG-DaLiA direct zip**: 🔗 [https://archive.ics.uci.edu/static/public/495/ppg+dalia.zip](https://archive.ics.uci.edu/static/public/495/ppg+dalia.zip) (2.87 GB). The real archive is a nested `data.zip`, 24 GB unzipped.
+
+#### Added in P3 v2 (2026-10-30), all downloaded as zips into `_zips/`
+6. **PAMAP2** (9 subjects, dominant-wrist IMU at 100 Hz with gyro, chest-strap HR, 18 activities, no falls; Reiss & Stricker 2012, CC BY 4.0):
+   - Direct zip 🔗 [https://archive.ics.uci.edu/static/public/231/pamap2+physical+activity+monitoring.zip](https://archive.ics.uci.edu/static/public/231/pamap2+physical+activity+monitoring.zip) (657 MB; nested `PAMAP2_Dataset.zip`).
+   - Used by: activity (with labels) and fall (as negatives).
+7. **Capture-24** (151 participants, ~24 h free-living wrist accelerometry at 100 Hz, Axivity AX3; camera-annotated activities with Walmsley-2020 labels; CC BY 4.0):
+   - Record 🔗 [https://ora.ox.ac.uk/objects/uuid:99d7c092-d865-4a19-b096-cc16440cd001](https://ora.ox.ac.uk/objects/uuid:99d7c092-d865-4a19-b096-cc16440cd001).
+   - Direct zip 🔗 [https://ora.ox.ac.uk/objects/uuid:99d7c092-d865-4a19-b096-cc16440cd001/files/rpr76f381b](https://ora.ox.ac.uk/objects/uuid:99d7c092-d865-4a19-b096-cc16440cd001/files/rpr76f381b) (6.5 GB).
+   - Read in place, one participant at a time; no compacted copy.
+   - Used by: activity, and fall negatives (two thirds of participants in CV, one third held out for false-alarm replay).
+8. **MIT-BIH Atrial Fibrillation Database** (25 records × ~10 h; rhythm annotations; ODC-By):
+   - Direct zip 🔗 [https://physionet.org/static/published-projects/afdb/mit-bih-atrial-fibrillation-database-1.0.0.zip](https://physionet.org/static/published-projects/afdb/mit-bih-atrial-fibrillation-database-1.0.0.zip) (440 MB). Annotations only are compacted.
+9. **Long-Term AF Database** (84 records × 24–25 h; reviewed beat labels plus rhythm annotations; ODC-By):
+   - Direct zip 🔗 [https://physionet.org/static/published-projects/ltafdb/long-term-af-database-1.0.0.zip](https://physionet.org/static/published-projects/ltafdb/long-term-af-database-1.0.0.zip) (1.78 GB). Annotations only are compacted.
+10. **Stress-Predict** (35 subjects, Empatica E4 — same device as WESAD; Stroop, interview and hyperventilation tasks; MIT licence; Iqbal et al., Sensors 2022):
+    - Repo 🔗 [https://github.com/italha-d/Stress-Predict-Dataset](https://github.com/italha-d/Stress-Predict-Dataset); zip from `codeload.github.com/.../zip/refs/heads/main` (24 MB).
+    - Used as the stress **external test** (34 labelled subjects, S02–S35).
+11. **WESAD chest ECG** (already in `wesad.zip`):
+    - R-peaks are now extracted as the HR-trust reference.
+    - The detector was validated against PPG-DaLiA's provided R-peaks: 98.7–99.3 % sensitivity, ~99.5 % precision, median HR error < 0.5 bpm.
+12. **MIMIC PERform AF Dataset** (35 ICU adults, 19 AF / 16 non-AF, 20 min each; fingertip PPG + lead-II ECG at 125 Hz; per-subject AF labels; Charlton et al., Physiol. Meas. 2022; ODbL 1.0; DOI `10.5281/zenodo.6807403`):
+    - Record 🔗 [https://zenodo.org/records/6807403](https://zenodo.org/records/6807403).
+    - Direct zips (WFDB, smallest format) 🔗 [https://zenodo.org/records/6807403/files/mimic_perform_af_wfdb.zip](https://zenodo.org/records/6807403/files/mimic_perform_af_wfdb.zip) (11.9 MB) and 🔗 [https://zenodo.org/records/6807403/files/mimic_perform_non_af_wfdb.zip](https://zenodo.org/records/6807403/files/mimic_perform_non_af_wfdb.zip) (10.2 MB). Read in place; no compacted copy.
+    - Used by: the rhythm **external test** only (first test on real PPG; never trained on). Results are in `docs/reports/WEARABLE_RHYTHM_PPG_AF_TEST.md`.
+
+### D. Local Storage Layout (v2, current machine: Windows, `D:\harshit\trident`)
+| Location | Contents | In git |
+|---|---|---|
+| `data/raw/wearable_ml_datasets/_zips/` | `wesad.zip`, `ppg_dalia.zip` (nested `data.zip`), `mitdb.zip`, plus (P3 v2) `pamap2.zip` (nested), `capture24.zip`, `afdb.zip`, `ltafdb.zip`, `stress_predict.zip` — **kept intact; every member is readable via `src/ml/wearable/data/archive.py` without extraction** | no |
+| `data/raw/wearable_ml_datasets/` | `mit-bih-arrhythmia-database-1.0.0/`, `HR_IMU_falldetection_dataset-master/`, `UP_Fall_sensors/` (CSVs), `sisfall/` + `upfall/` (code repos) | no |
+| `data/interim/wearable/compact/` | Lossless per-subject `.npz` for 10 datasets (Capture-24 is read from its zip). **SisFall raw text was deleted after a value-for-value check (4505/4505), so this is the canonical copy.** | no |
+| `data/processed/wearable/frames/` | Emulated 1.5 s device-frame tables (parquet) | no |
+| `data/manifest/wearable_datasets.json` | SHA-256 of every source and compacted file | **yes** |
+| `src/ml/wearable/config/datasets.yaml` | Dataset registry (URLs, licenses, archive paths) | **yes** |
+
+### E. Weather data (weather forecaster, `src/ml/weather/`, added 2026-10-30)
+| Use | URL | Notes |
+|---|---|---|
+| Training history | https://archive-api.open-meteo.com/v1/archive | Free, keyless (ERA5/ERA5T reanalysis, ~5-day lag). Hourly `temperature_2m, relative_humidity_2m, precipitation, wind_speed_10m, wind_gusts_10m, surface_pressure, dew_point_2m, cloud_cover`, `wind_speed_unit=ms`, `timezone=GMT`, requested in yearly chunks. Cached as `data/raw/weather/open_meteo_<site>_<start>_<end>.parquet` (~1.7 MB; currently not git-ignored - add `data/raw/weather/*.parquet` to `.gitignore` if it should stay out of git). |
+| Live observations (serving) | https://api.open-meteo.com/v1/forecast | Same variables with `past_days=N&forecast_days=1`, trimmed to the current hour (model analysis, not station data). |
+| Offline fallback | `data/raw/weather/chennai_historical.csv` | Meteostat hourly export (UTC; `wspd`/`wpgt` km/h -> m/s; sea-level -> surface pressure). |
+
+Details: `docs/WEATHER_MODEL.md`.
 
 ---
 
-## 4. Comprehensive 8-State Disaster Trauma Taxonomy
-
-1. `0: STABLE`: Nominal vitals and physical movement.
-2. `1: ELEVATED_STRESS`: Acute panic & autonomic shock ($GSR > 0.8$, elevated HR, normal $SpO_2$).
-3. `2: HYPOTHERMIA_RISK`: Sub-zero glacial immersion ($BPM < 50$, falling $SpO_2$, shivering stasis).
-4. `3: ASPIRATION_HYPOXIA`: Mud slurry aspiration / drowning ($\Delta SpO_2/\Delta t < -2.0\%/\text{s}$, $acc\_mag < 2.5g$).
-5. `4: HEMORRHAGIC_SHOCK`: Arterial laceration / internal bleeding ($BPM > 130$, `pulse_amp_decay` $< 0.4$, high $GSR$).
-6. `5: CONCUSSIVE_STASIS`: Head/spinal kinetic impact ($acc\_mag > 4.5g$, `motion_stasis` $< 0.02$).
-7. `6: CRUSH_ENTRAPMENT`: Rubble/boulder collapse (`motion_stasis` $< 0.02$, `gps_displacement` $\approx 0$, sustained high $GSR$).
-8. `7: CARDIAC_ARREST`: Electrocution / sudden pulse collapse (`pulse_amp` $\approx 0$ or extreme arrhythmia $BPM < 30 \text{ or } > 185$).
-
----
-
-## 5. Feature Engineering, Dataset Fusion & Train-Test Split Specifications
-
-### A. Dataset Harmonization & Attribute Consistency
-When fusing multi-source datasets (`WESAD`, `PPG_FieldStudy`, `MIT-BIH Arrhythmia`, `HR_IMU_falldetection`, plus synthetic ATLS trauma trajectories), consistency across units, sampling rates, datatypes, and precision is enforced:
-- **Baseline Time Grid**: All sensor streams are resampled to a **50 Hz uniform time grid** ($20\text{ ms}$ sampling step) via linear interpolation.
-- **Memory Precision**: Internal feature matrices use explicit `float32` (single precision floating point) to optimize cache usage and prevent RAM overflow during array concatenation, with timestamps in `float64` Unix epoch milliseconds.
-- **Unit & Attribute Standardization Table**:
-
-| Attribute | Canonical Unit | Standard Range | Storage Type | Source Normalization Formula / Rule |
-| :--- | :--- | :--- | :--- | :--- |
-| `bpm_current` | Beats per Minute ($BPM$) | $30.0 - 220.0$ | `float32` | Raw ECG/PPG peak detection ($60 / RR_{sec}$) |
-| `pulse_amp_decay` | Amplitude Ratio | $0.0 - 1.0$ | `float32` | $A_{\text{window\_peak}} / A_{\text{baseline\_peak}}$ ratio |
-| `spo2_current` | Percentage ($\%$) | $0.0 - 100.0\%$ | `float32` | Red/IR AC/DC ratio from MAX30102 sensor |
-| `acc_mag` | Force ($g$) | $0.0 - 16.0g$ | `float32` | $\sqrt{a_x^2 + a_y^2 + a_z^2} / 9.81$ (normalized to $1g = \text{Earth gravity}$) |
-| `gyro_mag` | Angular Speed ($^\circ/\text{s}$) | $0.0 - 2000.0^\circ/\text{s}$ | `float32` | $\sqrt{g_x^2 + g_y^2 + g_z^2}$ |
-| `gsr_stress_norm` | Normalized Conductance | $0.0 - 1.0$ | `float32` | Min-Max scaling of EDA skin conductance ($\mu\text{S}$) per subject |
-| `gps_displacement_15s` | Distance ($m$) | $0.0 - 500.0m$ | `float32` | Haversine distance over 15s window |
-
----
-
-### B. Missing Value Handling & Model-Based Imputation Strategy
-1. **In-Stream Short Gaps ($< 2.0\text{ s}$)**: Caused by transient RF telemetry dropouts. Filled using continuous linear spline interpolation during parsing.
-2. **Sensor Off / Disconnected ("No Finger" on MAX30102)**: When PPG/SpO2 drops due to sensor detachment or cardiac collapse ($SpO_2 = 0$), values are represented explicitly as `np.nan`.
-3. **XGBoost Native Default Split Branching**: Rather than forcing artificial mean/median imputation that masks true sensor failure, XGBoost natively routes missing (`NaN`) feature values down dedicated default split branches learned during gradient boosting.
-4. **Model-Based Imputation for Relational Pre-processing**: For statistical baseline calculations across incomplete historical windows, an Iterative Random Forest / KNN Regressor imputer is available to estimate baseline physiological metrics when required.
-
----
-
-### C. Categorical Encoding Matrix
-- **Target Variable (`health_state`)**: Encoded into 8 discrete ordinal integers (`0: STABLE` through `7: CARDIAC_ARREST`).
-- **Device & Context Features**:
-  - `sensor_location` (`wrist`, `chest`): One-Hot Encoded (`location_wrist`, `location_chest`).
-  - `subject_posture` (`sitting`, `standing`, `lying`, `running`): One-Hot Encoded for multi-modal HAR baseline.
-  - `subject_id`: Used exclusively as a grouping key for cross-validation splits (never passed directly to XGBoost to avoid patient ID overfitting).
-
----
-
-### D. Feature Scaling (Tree-Based Invariance)
-- Decision tree splits in XGBoost evaluate threshold inequalities ($x_i \ge \theta$). Monotonic scaling (MinMax, Standard Z-Score) has zero impact on decision tree split boundaries.
-- Features are retained in their **raw physical units** ($BPM$, $\% SpO_2$, $g$) to preserve direct interpretability in SHAP tree explanations and clinical threshold safety rules.
-
----
-
-### E. Time-Series Datetime & Temporal Features
-- **Cyclical Hour Encoding**: $\sin(2\pi \cdot \text{hour}/24)$ and $\cos(2\pi \cdot \text{hour}/24)$ to capture circadian variations in resting heart rate and body temperature.
-- **Elapsed Rescue Window ($\Delta t_{\text{elapsed}}$)**: Time passed since SOS trigger in seconds, capturing progressive systemic shock degradation.
-- **Sample Gap Delta ($\Delta t_{\text{sample}}$)**: Duration between telemetry frames to measure network latency.
-
----
-
-### F. Domain-Specific Interaction & Polynomial Features
-Nonlinear relationships rooted in wilderness trauma physics:
-1. **Kinetic-Stasis Coupling Index ($KSC$)**:
-   $$KSC = \text{acc\_mag\_max\_3s} \times \frac{1}{\text{motion\_stasis} + 1e-5}$$
-   *(High impact peak followed by immediate total immobility = Concussive Stasis / Traumatic Fall)*.
-
-2. **Shock Severity Index ($SSI$)**:
-   $$SSI = \frac{\text{bpm\_current}}{\text{spo2\_current} \times \text{pulse\_amp\_decay} + 1e-5}$$
-   *(Elevated heart rate with collapsing SpO2 & PPG amplitude = Class III/IV Hemorrhagic Shock)*.
-
-3. **Entrapment Isolation Marker ($EIM$)**:
-   $$EIM = \frac{\text{gsr\_stress\_norm}}{\text{motion\_stasis} + \text{gps\_displacement\_15s} + 1e-5}$$
-   *(High autonomic stress/GSR under zero physical movement or relocation = Rubble Entrapment)*.
-
-4. **Polynomial Kinetic Energy Proxy**: $acc\_mag^2 = acc_x^2 + acc_y^2 + acc_z^2$.
-5. **Heart Rate Acceleration**: $\frac{d(BPM)}{dt} \approx BPM_t - BPM_{t-1}$.
-
----
-
-### G. Multimodal SOS Text Features
-Distress text transcripts (e.g. from victim SOS voice input) are encoded into:
-- **TF-IDF Keyword Vectors**: 20 top clinical disaster keywords (`trapped`, `bleeding`, `cold`, `unconscious`, `crush`, `chest`, `drowning`).
-- **Transcript Derived Attributes**: `word_count`, `urgency_keyword_count`, `caps_ratio`.
-
----
-
-### H. Statistical Aggregations (15-Second Window Matrix)
-Computed across 750 samples per 15s window (50 Hz step):
-1. `bpm_current`: Current instantaneous heart rate ($BPM$).
-2. `bpm_mean_10s`: 15-second rolling mean heart rate.
-3. `bpm_std_10s`: Heart rate variability ($\text{STD}$).
-4. `pulse_amp_decay`: PPG amplitude ratio vs resting baseline ($0.0 - 1.0$).
-5. `spo2_current`: Instantaneous blood oxygen percentage ($SpO_2$).
-6. `spo2_slope`: Oxygen desaturation rate ($\Delta SpO_2 / \Delta t$).
-7. `acc_mag_max_3s`: Peak acceleration over last 3s ($g$).
-8. `motion_stasis`: Acceleration magnitude variance ($\text{Var}(acc\_mag)$).
-9. `gsr_stress_norm`: Normalized skin conductance ($0.0 - 1.0$).
-10. `gsr_slope`: Skin conductance rate of change ($\Delta GSR / \Delta t$).
-11. `fall_flag`: Binary MPU6050 fall detection flag (`0` or `1`).
-12. `gps_displacement_15s`: Displacement over 15 seconds (meters).
-
----
-
-### I. Train-Test-Validation Split Methodology
-To strictly prevent **data leakage** across sliding time-series windows:
-1. **Subject-Wise GroupKFold Splitting**:
-   - Time-series samples from the same subject/patient ($S_1 - S_{15}$ in WESAD/PPG-DaLiA) are grouped strictly into the *same* fold.
-   - **No overlapping windows** from the same person exist across training, validation, or test sets.
-2. **Split Proportions**:
-   - **70% Training Set**: Model optimization and gradient boosting.
-   - **15% Validation Set**: Early stopping evaluation (`early_stopping_rounds=15`, multi-class log loss monitoring).
-   - **15% Holdout Test Set**: Blind final evaluation (Confusion Matrix, F1-Score per state, SHAP summary plots).
-3. **Stratified Group Sampling**:
-   - Synthetic trauma trajectories (ATLS Hemorrhagic Shock & Mud Aspiration desaturation) and rare benchmark classes (`CARDIAC_ARREST`, `CONCUSSIVE_STASIS`) are stratified evenly across subject folds to ensure every fold contains balanced representation of high-acuity states.
-
----
-
-
-## 6. Sub-Project Technical Architecture & Execution Plan
-
-### A. Data Fusion Synthesizer (`src/ml/dataset_fusion_synthesizer.py`)
-- Fuses raw parser outputs from `WESAD`, `HR_IMU_falldetection`, `PPG_FieldStudy`, and `mitdb`.
-- Generates synthetic ATLS Class I-IV Hemorrhagic Shock trajectories and Mud Aspiration desaturation curves ($N \approx 50,000$).
-
-### B. XGBoost Model Training (`src/ml/train_wearable_model.py`)
-- Script created and ready to run on high-spec compute target. Exports `src/ml/wearable_health_model.pkl` ($<0.5\text{ ms}$ inference).
-
-### C. Backend API & Dynamic Priority Integration (`src/backend/main.py`)
-- `POST /api/telemetry/wearable`: Runs `WearableHealthPredictor` inference, updates `wearable_telemetry` DB table.
-- `calculate_priority()`: Dynamically elevates priority to 5 (CRITICAL) and triggers **Auto-ROV Scramble** when $R_{ML} \ge 0.75$ or high-acuity trauma states trigger.
-
-### D. Command Dashboard UI (`platform.html`, `dashboard.js`, `main_styles.css`)
-- Fixes SOS Modal OK button handler (`closeModal('successModal')`).
-- Implements `TRIDENT_logo.png` branding across platform headers & browser tab favicon.
-- Embeds real-time **AI Vitality Risk Radar** badge showing active health state and risk percentage.
-
----
-
-## 7. Iteration Memory Log
+## 4. Iteration log
 
 | Date / Timestamp | Iteration Milestone | Summary of Decisions / Changes | Next Action |
 | :--- | :--- | :--- | :--- |
-| **2026-09-17** | Sub-Project Initialization & Memory Creation | Established agent roles (Gemini = Architect/Planner, Opus = Implementer/Coder). Validated 4 raw local datasets on disk (`WESAD`, `PPG_FieldStudy`, `MIT-BIH`, `HR_IMU_falldetection`). Defined 8-state disaster taxonomy & 12-feature matrix. | Created initial docs. |
-| **2026-09-17** | Hardware Analysis & Portability Workflow Finalized | Analyzed laptop specs (MSI Modern 14, 8GB soldered RAM, i5-1235U). Agreed to defer actual training execution to a high-spec machine. Decided to write all pre-training code, backend routes, UI fixes, and push to GitHub for 100% portability. | Added direct dataset URLs to index docs & ready for Claude Opus implementation. |
-| **2026-09-17** | Feature Engineering & Data Fusion Specs Detailed | Defined data unit harmonization (50Hz grid, `float32`), statistical window aggregations, 3 interaction features ($KSC, SSI, EIM$), missing value strategy (XGBoost native `NaN` default splits), and categorical encoding. | Ready for Claude Opus pre-training implementation & git push. |
-| **2026-09-18** | Full Implementation Complete (Commit `3a30fa4`) | Claude Opus executed all tasks: created 3 ML modules (`wearable_model.py`, `dataset_fusion_synthesizer.py`, `train_wearable_model.py`), integrated ML predictor into `main.py` backend, fixed SOS modal `closeModal` bug, added TRIDENT logo branding + favicon across 5 templates, built AI Vitality Risk Radar widget (HTML/JS/CSS). 15 files changed, +2042 lines. Pushed to `harshitworkmain/trident`. | Deployed to Render successfully. Heuristic fallback active. |
+| **2026-09-17** | Sub-Project Initialization & Memory Creation | Established development roles (Architect/Planner and Implementation). Validated 4 raw local datasets on disk (`WESAD`, `PPG_FieldStudy`, `MIT-BIH`, `HR_IMU_falldetection`). Defined 8-state disaster taxonomy & 12-feature matrix. | Created initial docs. |
+| **2026-09-17** | Hardware Analysis & Portability Workflow Finalized | Analyzed laptop specs (MSI Modern 14, 8GB soldered RAM, i5-1235U). Agreed to defer actual training execution to a high-spec machine. Decided to write all pre-training code, backend routes, UI fixes, and push to GitHub for 100% portability. | Added direct dataset URLs to index docs & ready for implementation. |
+| **2026-09-17** | Feature Engineering & Data Fusion Specs Detailed | Defined data unit harmonization (50Hz grid, `float32`), statistical window aggregations, 3 interaction features ($KSC, SSI, EIM$), missing value strategy (XGBoost native `NaN` default splits), and categorical encoding. | Ready for pre-training implementation & git push. |
+| **2026-09-18** | Full Implementation Complete (Commit `3a30fa4`) | Executed implementation tasks: created 3 ML modules (`wearable_model.py`, `dataset_fusion_synthesizer.py`, `train_wearable_model.py`), integrated ML predictor into `main.py` backend, fixed SOS modal `closeModal` bug, added TRIDENT logo branding + favicon across 5 templates, built AI Vitality Risk Radar widget (HTML/JS/CSS). 15 files changed, +2042 lines. Pushed to `harshitworkmain/trident`. | Deployed to Render successfully. Heuristic fallback active. |
 | **2026-09-18** | PyTorch 2.6 Compat Fix (Commit `88208bf`) | Fixed `torch.load` weather LSTM error caused by PyTorch 2.6 changing `weights_only` default to `True`. Added `weights_only=False` since checkpoint is trusted. Remaining weather LSTM warning (`fc` vs `fc1`/`fc2` mismatch) is a pre-existing architecture issue, not in scope. | Model training deferred to high-RAM machine. |
 | **2026-09-22** | Benchmark Datasets Unzipping & Parsing Verification | Unzipped all 30 raw Empatica E4 ZIP files across WESAD (15 subjects `S2`-`S17`) and PPG-DaLiA (15 subjects `S1`-`S15`) into `e4_data/` containing `ACC.csv`, `BVP.csv`, `EDA.csv`, `HR.csv`, `TEMP.csv`, `info.txt`, `tags.csv`. Verified parser generating 9,827 sliding 15-second feature windows across 15 subjects. | Ready for Kaggle environment setup. |
-| **2026-09-24** | Kaggle API Setup & Dependency Integration | Authenticated user `harshitsingh7883` via API token `KGAT_1a0c1c09c7c07f0b8bb7969cd0776e75` in `~/.kaggle/kaggle.json`. Installed `kaggle` CLI v1.7.4.5 and `kagglehub` v1.0.2. Added `xgboost`, `lightgbm`, `joblib`, `wfdb`, `pyarrow`, `kaggle` to `requirements.txt` (commit `211c573`). | Defined multi-model tournament architecture. |
-| **2026-09-25** | Multi-Model Tournament & 3-Stage Pruning Blueprint | Designed 4-model tournament architecture (XGBoost, LightGBM, 1D-CNN, Deep MLP) with a deterministic 3-stage pruning protocol (10% screening -> 35-50% semifinal -> 100% final winner tuning) on Kaggle GPU/CPU. Established requirement to record all metrics across all stages in `docs/MODEL_TOURNAMENT_RESULTS.md`. | Pinned implementation tasks for Claude Opus execution. |
-
----
-
-## 8. Multi-Model Kaggle Training Tournament & 3-Stage Pruning Protocol
-
-### A. Tournament Strategy Overview
-To establish the optimal model architecture for predicting 8 disaster trauma states from 15-second wearable physiological windows, TRIDENT uses a **multi-model competitive tournament** executed on Kaggle's free GPU/CPU compute infrastructure.
-
-#### Candidate Architectures
-1. **XGBoost Classifier**: Gradient Boosted Decision Trees with native `NaN` default split handling and fast tree structure optimization.
-2. **LightGBM Classifier**: Leaf-wise tree growth GBDT optimized for high-dimensional feature interaction speed and low memory footprint.
-3. **1D Temporal CNN**: Deep Learning 1D Convolutional Neural Network designed to extract temporal spatial feature hierarchies from continuous physiological window vectors.
-4. **Feed-Forward Deep MLP**: Deep Multi-Layer Perceptron with Batch Normalization, ReLU activations, and Dropout regularization for non-linear feature space mapping.
-
----
-
-### B. Deterministic 3-Stage Pruning Protocol
-
-To maximize model performance while remaining within Kaggle's execution timeouts and memory limits, a 3-stage tournament pruning protocol is enforced:
-
-```mermaid
-graph TD
-    A["Full Dataset (50,000+ 15s Windows)"] --> B["Stage 1: Screening (10% Subsample, GroupKFold seed=42)"]
-    B --> C1["XGBoost (10%)"]
-    B --> C2["LightGBM (10%)"]
-    B --> C3["1D-CNN (10%)"]
-    B --> C4["Deep MLP (10%)"]
-    
-    C1 --> D["Evaluate Macro F1 & Log-Loss"]
-    C2 --> D
-    C3 --> D
-    C4 --> D
-    
-    D --> E["Stage 2: Semifinal (Top 2 Models, 35-50% Subsample seed=42)"]
-    E --> F1["Semifinalist 1 (35-50%)"]
-    E --> F2["Semifinalist 2 (35-50%)"]
-    
-    F1 --> G["Evaluate Performance & Training Latency"]
-    F2 --> G
-    
-    G --> H["Stage 3: Final Tournament Winner (100% Dataset)"]
-    H --> I["Full Training + Hyperparameter Tuning"]
-    I --> J["Export src/ml/wearable_health_model.pkl"]
-    I --> K["Generate docs/MODEL_TOURNAMENT_RESULTS.md"]
-```
-
-#### Protocol Rules & Constraints
-1. **Identical Data Subsets**:
-   - Stage 1 (10%) uses the EXACT SAME subject-wise sample subset (`random_state=42`, GroupKFold) across all 4 candidate models.
-   - Stage 2 (35-50%) uses the EXACT SAME expanded subject-wise sample subset (`random_state=42`) across the 2 advancing semifinalist models.
-   - This ensures 100% scientific fairness—differences in metric scores reflect pure model architectural capability, not data sampling variance.
-
-2. **Evaluation Metrics**:
-   - Primary Ranking Metric: **Macro F1-Score** across all 8 trauma states.
-   - Secondary Metric: **Multi-Class Log Loss** & **Per-State Recall** (critical for high-acuity states like `CARDIAC_ARREST` and `HEMORRHAGIC_SHOCK`).
-   - Operational Metrics: **Inference Latency** ($\text{ms/sample}$) and **Model Artifact Size** ($\text{MB}$).
-
-3. **Automated Documentation**:
-   - Results for ALL 4 models across ALL 3 STAGES must be logged continuously to `docs/MODEL_TOURNAMENT_RESULTS.md`.
-
----
-
-### C. Dataset Upload & Kaggle Workflow
-
-1. **Local Parquet Generation**:
-   - `src/ml/dataset_fusion_synthesizer.py` parses raw datasets (~40+ GB) into 15-second feature windows and exports `data/processed/fused_training_matrix.parquet` (~50 MB).
-2. **Kaggle Dataset Upload**:
-   - `src/ml/kaggle_runner.py` uploads `fused_training_matrix.parquet` as a private Kaggle Dataset via `kaggle` API / `kagglehub`.
-3. **Kaggle Kernel Execution**:
-   - `src/ml/kaggle_runner.py` pushes `src/ml/multi_model_tournament.py` as a Kaggle Notebook / Script kernel, starts execution, and polls status until completion.
-4. **Artifact Download & Deployment**:
-   - Downloads the winning model artifact `wearable_health_model.pkl` and `docs/MODEL_TOURNAMENT_RESULTS.md` directly into the repo directory.
-
----
-
-### D. Pinned Implementation Tasks (For Claude Opus Execution)
-
-- [ ] **Task 1: Generate Processed Dataset**: Execute `python src/ml/dataset_fusion_synthesizer.py` locally to produce `data/processed/fused_training_matrix.parquet`.
-- [ ] **Task 2: Build Tournament Module (`src/ml/multi_model_tournament.py`)**: Implement 4 model wrappers (XGBoost, LightGBM, 1D-CNN, MLP), 3-stage pruning loop, and automated markdown generator (`docs/MODEL_TOURNAMENT_RESULTS.md`).
-- [ ] **Task 3: Build Kaggle Orchestrator (`src/ml/kaggle_runner.py`)**: Implement dataset creation/upload, kernel metadata generator, kernel push/poll execution loop, and artifact retrieval.
-- [ ] **Task 4: Execute & Verify**: Run Kaggle tournament, download winning model artifact `src/ml/wearable_health_model.pkl`, commit results, and verify local model loading.
-
+| **2026-09-24** | Kaggle API Setup & Dependency Integration | Authenticated user `harshitsingh7883` via API token stored in `~/.kaggle/kaggle.json` (token value removed from docs 2026-10-30 — it had been committed and must be revoked). Installed `kaggle` CLI v1.7.4.5 and `kagglehub` v1.0.2. Added `xgboost`, `lightgbm`, `joblib`, `wfdb`, `pyarrow`, `kaggle` to `requirements.txt` (commit `211c573`). | Defined multi-model tournament architecture. |
+| **2026-09-25** | Multi-Model Tournament & 3-Stage Pruning Blueprint | Designed 4-model tournament architecture (XGBoost, LightGBM, 1D-CNN, Deep MLP) with a deterministic 3-stage pruning protocol (10% screening -> 35-50% semifinal -> 100% final winner tuning) on Kaggle GPU/CPU. Established requirement to record all metrics across all stages in `docs/reports/MODEL_TOURNAMENT_RESULTS.md`. | Pinned implementation tasks. |
+| **2026-10-30** | P2 Features & Head Datasets; P3 Tournament launched | **P2:** 6 feature sets (stress 60 s, fall 6 s, fall acc-only, activity 30 s, HR-trust 12 s, rhythm 60 s) in `src/ml/wearable/features/`. Online `FeatureEngine` is reused offline by replay, with a JSON-path parity test (bit-identical). Past-only personal calibration (first 2 min). Head tables built: stress 5,268 windows / 15 subj; fall 41,867 / 55 subj + HIFD external 3,447; activity 15,405; HR-trust 43,106; rhythm 22,812 / 46 patients (PPG-like augmentation calibrated on PPG-DaLiA: median RR error 58 ms, beat-count ratio 0.96–1.03); 144k daily-life windows (~60 h) for fall false-alarm replay. 35 tests pass. **P3:** 5 candidates (logreg baseline, XGBoost, LightGBM, MLP, 1D-CNN), 3 stages, nested Optuna, subject-bootstrap Stage 3, MLflow (`mlruns/`), auto-report `docs/reports/MODEL_TOURNAMENT_RESULTS.md`. Smoke run: logreg baseline beat all contenders on stress (3-fold), so the rule now lets the baseline advance if it ranks top-2. | Review tournament results → P4. |
+| **2026-10-30** | P3 Tournament complete (80 min, CPU) | Winners (tuned, out-of-fold macro-F1): **stress → logreg** 0.885 (tie with MLP; baseline kept, smaller); **activity → XGBoost** 0.903 (tie with LightGBM); **HR-trust → 1D-CNN** 0.755 (significant over MLP, CI +0.007…+0.021); **rhythm → logreg** 0.752 (tie with MLP); **fall → XGBoost** 0.972, sensitivity 0.968 / specificity 0.987 (tie with LightGBM). External HIFD (never trained on): macro-F1 0.864, sensitivity 0.995, specificity 0.919. **Problem:** daily-life replay of the accelerometer-only fall model gives 119 false alarms per 8 h at 0.5 (48 at 0.9), against a target of ≤1. Scripted ADLs in UP-Fall/SisFall do not cover real daily-life motion. Full tables in `docs/reports/MODEL_TOURNAMENT_RESULTS.md`. | P4 must fix fall false alarms (hard-negative training on daily-life data with held-out subjects, post-impact stillness confirmation, threshold tuning), then calibrate and export. |
+| **2026-10-30** | P3 v2 — data and candidates expanded; tournament rerun launched | User approved a full P3 rerun focused on Tier-1 accuracy (P4 on hold until the user says so). **Downloaded:** PAMAP2, Capture-24, AFDB, LTAFDB, Stress-Predict (≈ 9.5 GB, kept as zips; URLs in §3.C items 6–11). **New data per head:** stress — WESAD CV + Stress-Predict as external test (pooling hurt WESAD 0.834 vs 0.885); HR-trust — + WESAD with an ECG reference from our validated R-peak detector (72,003 windows / 30 subjects); rhythm — + AFDB + LTAFDB (126,579 windows / 155 patients, 44 % abnormal); activity — + PAMAP2 + Capture-24 (94,556 windows / 175 subjects, 'light' 729 → 15,485); fall — accelerometer-only, + daily-life negatives with hard-negative mining (561,095 CV windows / 190 subjects) and 55 Capture-24 people (~1,400 h) held out for the false-alarm replay. **New candidates:** Extra-Trees, MiniRocket (own numpy implementation), Stage-3 soft-vote. v1 results archived in `data/processed/wearable/tournament/v1/`. 44 tests pass. | Review P3 v2 results; user decides on P4. |
+| **2026-10-30** | P3 v2 complete | Winners (tuned, out-of-fold macro-F1): **stress → MiniRocket** 0.936 (significant over Extra-Trees; Stress-Predict external 0.52–0.58, poor transfer); **HR-trust → soft-vote 1D-CNN + Extra-Trees** 0.767 (vote significant over 1D-CNN, CI +0.006…+0.013; PPG-DaLiA 0.753 vs v1 0.755, WESAD 0.785); **rhythm → 1D-CNN** 0.932 (MIT-BIH 0.822 vs v1 0.752; AFDB 0.936, LTAFDB 0.938); **activity → Extra-Trees** 0.801 (PPG-DaLiA 0.903 = v1, Capture-24 0.732); **fall → soft-vote Extra-Trees + 1D-CNN** (Extra-Trees 0.875 tuned; vote significant, CI +0.009…+0.034). **Activity data decision:** pooling PAMAP2 cut PPG-DaLiA from 0.90 to 0.83 because its light/active labels run the opposite way at the wrist, while Capture-24's MET-based labels agree with PPG-DaLiA (`tournament/activity_capture24_check.json`). PAMAP2 is now external-only (0.59); the pooled result is archived in `tournament/v2_pooled_activity/`. **Fixes:** joblib thread-pool race on Python 3.13 / Windows (Extra-Trees now grows sub-forests in its own threads); missing `observed=True` on a categorical groupby in the fall event-sensitivity check. | P4. |
+| **2026-10-30** | P4 complete — final models, `models/wearable/registry.json` | Each winner was refitted on all training windows and exported to ONNX. Parity was checked on 4,000 rows: max \|Δp\| ≤ 1.2e-6, MiniRocket 5.4e-3, 0 argmax flips. Then calibration (Platt; temperature for activity, cross-fitted by subject), threshold, `golden.npz`, `card.md`, `metrics.json`. Calibrated out-of-fold results: stress 0.935 (CI 0.889–0.970), threshold 0.33; HR-trust 0.768 (0.742–0.792), 0.59; rhythm 0.932 (0.915–0.949), 0.61; activity 0.801 (0.778–0.820), argmax; fall 0.867 (0.843–0.886), AUROC 0.994, threshold **0.72** by the pre-registered rule (most sensitive with ≤ 1 false alarm / 8 h on the out-of-fold daily-life data). At 0.72, 73 % of fall trials are detected; held-out Capture-24 (55 people, 1,403 h) gives **2.1 false alarms / 8 h**; HIFD window sensitivity is 0.34 (AUROC 0.974). Fusion's post-impact stillness check must close that gap. Report: `docs/reports/WEARABLE_FINAL_MODELS.md`. **Serving issue (P6):** onnxruntime 1.22 loads large tree ensembles slowly (HR-trust Extra-Trees: 73 MB, 1.9 M nodes, ~280 s; linear in nodes, same with ai.onnx.ml opset 5). | P5 fusion replay. |
+| **2026-10-30** | P5 complete — Tier-2 fusion validated on real data | **Serving runtime** (`src/ml/wearable/serving/runtime.py`): online `FeatureEngine`, then registry heads at their training stride with the last output held and input-availability gating, then `FusionEngine`. Streaming and batched replay agree (test). **Replay** (`pipeline replay`, report `docs/reports/WEARABLE_FUSION_REPLAY.md`) over PPG-DaLiA, WESAD, PAMAP2, Stress-Predict and 1,403 h of held-out Capture-24, plus HIFD falls with 60 s of semi-synthetic stillness. **Bug fixed:** NaN device flags counted as true (`bool(nan)`), so every device looked wet; hypothermia alarms went 118 → 2. **User decisions (device is wrist-worn; stress is advisory):** CRUSH_ENTRAPMENT now needs HR ≥ 20 bpm above baseline plus either stillness ≥ 120 s after an impact or ≥ 300 s; the stress head is dropped from it (Stress-Predict crush 14.3 → 0.51 / 8 h). Fusion fall operating point is 0.6 (`head_thresholds`; HIFD falls caught 61.5 % → 84.6 %). ELEVATED_STRESS is advisory (`alert_level`), p 0.85, dwell 120 s. **Final critical false alarms / 8 h:** PPG-DaLiA 0.67, WESAD 0.33, PAMAP2 2.24 (3 in 10.7 h), Stress-Predict 0.51, held-out Capture-24 1.20. WESAD stress phase flagged 86 % of the time, baseline 0 %. HIFD: 84.6 % of falls → CONCUSSIVE_STASIS (ADL 6.9 %), median 32 s after impact. **Serving speed-up without retraining:** Extra-Trees members stored as compiled numpy forests (`serving/forest.py`), parity-checked against the ONNX (≤ 3e-7, 0 flips); loading all 5 heads takes 0.5 s instead of ~9 min. Runtime uses ~230 MB RAM and ~60 ms CPU per frame. 61 tests pass. Option analyses: `data/processed/wearable/replay/{crush_options,fall_operating_points,stress_operating_points}.json`. | User reviews P4 + P5, then gives instructions for P6 (backend integration / hosting) and P7. |
+| **2026-10-30** | Architecture v2 (Hybrid) — P0, P1, P7 | Audit found the 8-class synthetic approach unvalidatable (5/8 states had only generator-labelled data; v1 firmware SpO2 was simulated). Adopted `docs/WEARABLE_ML_ARCHITECTURE.md`: 4 real-data Tier-1 heads (stress/WESAD, fall/UP-Fall+SisFall+HIFD, activity+HR-trust/PPG-DaLiA, rhythm/MIT-BIH) with a per-head 5-candidate tournament, plus a Tier-2 fusion state machine. **P0:** legacy synthesizer/tournament/Kaggle code removed, leaked Kaggle token scrubbed, schema v2 frame contract (`src/ml/wearable/schema.py`). **P1:** 6 datasets compacted losslessly (SisFall verified 4505/4505, then raw deleted), device emulator + 14 tests, frame tables + `docs/reports/WEARABLE_DATA_REPORT.md`. **P7:** firmware v2 PlatformIO project (real SpO2, RR, MAX30205, BMP388, water, battery, 50 Hz IMU aggregates, dual-core tasks) — compiles, untested on hardware. Wi-Fi credentials found in legacy firmware history. | P2: features & head datasets. |
+| **2026-10-30** | Rhythm head — external test on real PPG (MIMIC PERform AF) | The registry rhythm head (v2.0.0, unchanged; trained on ECG RR) was tested on 35 ICU adults with fingertip PPG and per-subject AF labels (19 AF / 16 non-AF; 6,685 60-s windows, Zenodo `10.5281/zenodo.6807403`). New loader `load_mimic_perform_af()` reads the WFDB zips in place and is kept out of `LOADERS` so it never reaches training. **(a) PPG beats (device path):** 100 % of windows available; window AUROC 0.987 [0.968, 1.000]; sensitivity 0.936 and specificity 0.941 at 0.61; macro-F1 0.938; subject AUROC 1.000 (19/19 AF, 15/16 non-AF). **(b) ECG R-peaks (reference):** window AUROC 1.000; sensitivity 0.899 and specificity 1.000; macro-F1 0.945. The PPG-only errors come from beat detection (missed beats look irregular: one false-positive subject). Caveat: ICU fingertip PPG is not wrist PPG; n = 35. Report: `docs/reports/WEARABLE_RHYTHM_PPG_AF_TEST.md`. | Test on wrist PPG with AF labels when such data is available; consider gating the rhythm head on PPG beat quality (HR-trust). |
+| **2026-10-30** | Weather forecaster v1.0.0 (`src/ml/weather/`) | Replaced the temperature-only recursive LSTM with a multi-variable (T, RH, rain, wind, pressure), 1-48 h, p10/p50/p90 forecaster trained on Open-Meteo ERA5 archive 2015-2026. Candidates: persistence, seasonal-naive, climatology, LightGBM direct quantile (per variable x horizon group), GRU -> ONNX, lgbm+GRU blend; rolling-origin backtest on the final 12 months, empirical quantile calibration and per-band selection on a prior 6-month slice. Learned models beat all baselines everywhere; blend/lgbm chosen. Hazards (heat index, heavy rain, high wind, API flood-risk *index*). Serving: `WeatherService` (no torch). Details: `docs/WEATHER_MODEL.md`. |
+| **2026-10-31** | P6 platform + P7 firmware complete — running locally for review | **User decisions:** FastAPI rewrite; React + Vite "operations console" UI (dark); SQLite (WAL) now, PostgreSQL by URL; staff JWT + roles, public SOS form; replay simulator; P7 = update + compile; device is wrist-worn; hosting deferred to CI/CD. **Backend** (`src/backend/app/`, design + contract `docs/PLATFORM_DESIGN.md`): ACID write transactions, optimistic locking (version → 409) and a server-side SOS state machine (CP for dispatch); idempotent telemetry on (device, boot, seq) and SOS Idempotency-Key (AP for telemetry); JWT access + rotating refresh tokens with reuse detection, RBAC, hashed device/ROV-bridge keys, rate limits, audit log, CSP; scheduler with DB-lease leader election (short renewed leases + shared last_run_at); WebSocket hub with per-topic seq; Alembic migrations; /healthz /readyz /metrics. Triage = 0-100 score with reasons → P1 (most urgent)…P5; linked wearable critical state adds 30; P1–P2 auto-dispatched by capacity. Wearable ingest runs the P5 runtime (heads + fusion) outside the DB lock and opens alerts linked to the victim's SOS. **ROV missions** (user request): semi-autonomous transit, exclusive manual control (takeover/release, dead-man 120 s), STOP for any responder, serial bridge `src/rov/bridge.py` speaking the station protocol; `/missions` page shows live ROV telemetry + the victims' live wearables. **Analytics** are live only (DB + Open-Meteo GloFAS river discharge for Adyar/Cooum/Kosasthalaiyar). **Weather** v1.0.0 (`docs/WEATHER_MODEL.md`): multi-variable p10/p50/p90 to 48 h, beats persistence and seasonal-naive at every horizon. **Rhythm on real PPG** (MIMIC PERform AF): window AUROC 0.987, subject AUROC 1.0. **Fixes found by live testing:** schema rejected impacts > 16 g (per-axis range; |a| ≤ 27.7 g); fusion recorded the impact peak/probability at the wrong frame; serving imported the training stack; ONNX tree kernels loaded in minutes (compiled numpy forests, 0.5 s); scheduler leases blocked takeover for 3× the job interval. **P7:** firmware 2.1.0 — `X-Device-Key`, batched frames + acks, backoff, boot_id + monotonic seq, `buzz`, alert display; `pio run` SUCCESS (RAM 22.7 %, flash 52.9 %). Legacy Flask backend, old templates, v1 weather LSTM and v1 predictor removed (in git history). 98 tests pass. | User reviews the local run; then CI/CD + hosting, docs (P8). Set `DEVICE_KEY` in `secrets.h` from Admin → devices. |
+| **2026-10-31** | P6/P7 wrap-up: degraded conditions and dispatch under load | **No/poor internet:** the SOS page is a PWA (works offline after one visit; offline requests queue on the phone and resend with the same Idempotency-Key, kept 48 h); "Send by SMS instead" with a compact parseable message, plus a provider-agnostic SMS gateway webhook `POST /api/v1/sms/inbound` (off until TRIDENT_SMS_SECRET is set); the wearable buffers 8 min (320 frames, RAM 32.4 %) and keeps event frames when full; LOST_CONTACT alerts when a non-STABLE device goes silent; the ROV bridge stops the thrusters after 5 s without the control room, and the dead-man stop now also reaches real units; the map degrades to markers only. **Teams exhausted:** auto-dispatch runs in urgency order; `awaiting_resources`; capacity status (ok/strained/exhausted) in the API, WebSocket and ops banner; reallocation suggestions (only from requests ≥2 levels lower that are not en route), confirmed by a human and moved atomically; priority ageing (+2 per 5 min, cap 20); duplicate linking (same phone or within 100 m in 2 h; never auto-dispatched). **Also fixed:** SQLite migrations with foreign keys on existing data (table rebuild). Future work and owner inputs: `docs/RESILIENCE_AND_FUTURE_WORK.md`. 106 tests pass; firmware builds. | User provides an SMS gateway + number, a tile key, and confirms the helplines; then full QA after the remaining phases. |
+| **2026-10-31** | Owner inputs round: wearable SOS button, extreme-case auto-dispatch, keyless dark map, SMS test | **Wearable SOS button** (fw 2.2.0, GPIO27→GND; hold 1.5 s or 3 taps; hold 5 s to cancel): every frame carries `sos{active, press_id}` until the server acks; the backend creates one SOS per press (`source: wearable`, +40 points so at least P2, band GPS) and a critical `SOS_BUTTON` alert; a cancel from the band adds a note and resolves the alert but leaves the request for a dispatcher; build RAM 34.1 %, flash 53.1 %. **Owner policy:** a team is moved without confirmation only when every signal agrees: P1 ≥ 80, linked wearable critical with risk ≥ 0.85 for ≥ 60 s, environmental corroboration (water disaster, a weather warning or a rising river), no free team; the donor is a P4/P5 request that is not en route; full evidence is audited. **Map:** Stadia dark tiles need no key on localhost (OSM fallback). **SMS:** admin "SMS intake test" panel and `POST /api/v1/sms/test` (no provider needed); an Android gateway is deferred. 108 tests pass. | Hosting: a free Stadia domain registration; SMS: Android SMS-gateway app or a provider. |
+| **2026-10-31** | Full-ecosystem QA + ROV camera CV integration | **QA streams:** frontend E2E in real Chrome (every role, mobile + desktop, offline PWA, a11y via axe, resilience), security review (52 endpoints × 5 roles, JWT, injection, XSS, transport), load/concurrency/failure injection (bursts, dispatch races, 20 devices × 5 min, WebSocket fan-out, kill -9, network/DB/ML failure, 20-min soak), plus static checks, clean-venv prod install, PostgreSQL DDL (offline), model-file hashes (96/96), firmware build. **Fixed:** 2 high + 5 medium security issues (unbounded time series DoS; idempotency namespace collision letting the public suppress SMS/band SOS; unverified public wearable claims; WebSockets surviving deactivation; SMS secret brute force; stored HTML in map tooltips), 12 load/failure defects (rate-limit bursts; idempotent retry vs rate limit; DB busy → 503; slow duplicate check/auto-triage; malformed frames blocking a backlog; readyz write probe; tokens in logs; job retry/backoff; UNKNOWN state without ML; SOS group validation; double error logging), 7 UI bugs + all axe violations (4 serious → 0), a SQLite migration bug with existing data, outdated requirements.txt; legacy trident_sos.db removed (owner OK). **ROV camera:** vision worker `src/cv/vision` (YOLOv8n + Haar/LBPH + pinhole distance; webcam/URL/file/demo) → API relay (vision key, single-use stream tickets, MJPEG) → missions panel with live annotated stream, persons badge and detections. 127 tests pass; firmware builds (RAM 34.1 %, flash 53.1 %). | Owner reviews; then P8 docs or future-work brainstorming. |
+| **2026-10-31** | Future-work brainstorm → roadmap | `docs/RESILIENCE_AND_FUTURE_WORK.md` Part II (§5–§14): roadmap at a glance (P1 now / P2 next / P3 later); cloud scaling (one-VM Docker Compose deployment with PostgreSQL + Caddy TLS + backups; a table of which in-memory state moves where for multi-replica: Redis pub/sub WebSocket fan-out, device-affinity ingest with fusion-state snapshots, Redis rate limits; an event-streaming backbone; TimescaleDB tiering); disaster connectivity (Android SMS gateway, offline MBTiles, LoRa/Meshtastic, ESP-NOW, BLE companion app, satellite, edge kit with offline-first sync, WhatsApp/IVR); dispatch intelligence (ETA routing, optimised assignment, mission clustering, mutual aid, mass-casualty mode, inventory); ML/CV (real-hardware data collection, TinyML, NWP-fed weather, radar nowcasting, inundation mapping, camera calibration, YOLO fine-tuning on person-in-water, tracking, thermal, WebRTC, Jetson); product (i18n, responder app, family reunification, CAP/112 integration); security/privacy (HttpOnly refresh cookie, MFA, audit hash-chain, TLS pinning, DPDP retention, face-recognition consent); observability (Prometheus/Grafana/OTel/Loki, SLOs, runbooks); CI/CD and testing; open owner decisions. | Owner chooses the next step. |
+| **2026-10-31** | P8: documentation consolidation | **New/rewritten:** root README (screenshots, docs table), `docs/README.md` index, ARCHITECTURE, GETTING_STARTED, DEPLOYMENT (Compose + PostgreSQL + Caddy, backups), USER_GUIDE (every role, ROV station, band), TRAINING_GUIDE, `src/cv/README.md`; this file rebuilt (current state, docs map, datasets, sorted log); WEARABLE_ML_ARCHITECTURE §10/§12 now describe the system as built; `P6_PLATFORM_DESIGN.md` → `PLATFORM_DESIGN.md`; generated reports → `docs/reports/` (generators updated). **Merged/removed:** 10 legacy docs (old Flask-era setup/run/deploy/architecture/SOS/ROV/teaching/migration guides), 4 career docs → `docs/career/TRIDENT_CAREER_NOTES.md`, root resume bullets → `docs/career/`, duplicate CV READMEs and stray files. **Fixes found while documenting:** geofence command keys aligned to `lat`/`lng`/`radius_km` (firmware accepts both, console sends canonical; buzz `{ms}`); SOS timeline now includes assignments, assignment rows carry `assigned_by`/`assigned_at`; LOST_CONTACT no longer fires for `UNKNOWN` (ML off) devices; admin ROV bridge/vision-key panel; backend README config table corrected (SOS 20/min burst 10, SMS, public URL, expose-docs). Link check: 0 broken. 128 tests pass; firmware builds. | Future versions per RESILIENCE_AND_FUTURE_WORK Part II; hosting/CI-CD, real SMS gateway, map-tile key and Wi-Fi credentials deferred by the owner. |
+| **2026-10-31** | Master write-up context (`docs/TRIDENT_MASTER_CONTEXT.md`) | Single reference for reports, papers and patents: Part 0 (disclosure-before-filing rules, [TO FILL] facts, canonical conventions), 1 (narrative, titles, objectives, contributions, keywords, SDGs), 2 (canonical results incl. what is not measured), 3 (11 candidate inventive features, two-provisional strategy, prior-art search plan with IPC/CPC), 4 (pre-filled IDF, Form 2 provisional draft, claim drafts for applications A and B, Rule 15 drawings, ≤150-word abstract, US/PCT route), 5 (IEEE/Springer/VIT capstone blueprints, statements, abbreviations, standards, trade-offs), 6 (bibliography seeds, media inventory); appendices: checklist, platform and ML fact sheets, format rules with official sources (IP India fees checked 2026-10-31; VIT format unverified, no official public source). Doc consistency pass: ARCH 'as built' list, PLATFORM_DESIGN buffer/idempotency/dedup/retention, USER_GUIDE limitations and admin panels, test count 128 everywhere. Fusion replay re-run with the current fusion code. | Owner fills [TO FILL] items; file a provisional before any public disclosure. |

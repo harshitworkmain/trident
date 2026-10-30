@@ -1,0 +1,30 @@
+{
+  "name": "TRIDENT",
+  "short_name": "TRIDENT",
+  "description": "Flood and water-rescue coordination for Chennai. Request help, even with a weak connection.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0d0e10",
+  "theme_color": "#0d0e10",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Request help",
+      "url": "/sos"
+    }
+  ]
+}

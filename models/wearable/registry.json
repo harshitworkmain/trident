@@ -1,0 +1,436 @@
+{
+  "heads": {
+    "stress": {
+      "head": "stress",
+      "version": "2.0.0",
+      "created_utc": "2026-10-30T05:02:48+00:00",
+      "package_version": "2.0.0.dev0",
+      "feature_set": "stress",
+      "window_frames": 40,
+      "features": [
+        "eda_rel_mean",
+        "eda_rel_max",
+        "eda_std",
+        "eda_slope",
+        "eda_rise_frac",
+        "eda_range",
+        "bpm_mean",
+        "bpm_rel",
+        "bpm_std",
+        "bpm_slope",
+        "temp_delta",
+        "temp_slope",
+        "acc_activity",
+        "acc_peak",
+        "hrv_n",
+        "hrv_mean",
+        "hrv_sdnn",
+        "hrv_rmssd",
+        "hrv_pnn50",
+        "hrv_cv",
+        "hrv_sd1",
+        "hrv_sd2",
+        "hrv_sd1_sd2",
+        "hrv_tpr"
+      ],
+      "sequence_shape": [
+        40,
+        7
+      ],
+      "classes": [
+        "non_stress",
+        "stress"
+      ],
+      "members": [
+        "minirocket"
+      ],
+      "combine": "single",
+      "params": {
+        "minirocket": {
+          "n_features": 1000,
+          "C": 0.1
+        }
+      },
+      "files": {
+        "model_minirocket.onnx": {
+          "sha256": "7929e01fd14b9a639a196c479232849e31a9365dba3153a25563435be2bb71c5",
+          "bytes": 59977
+        }
+      },
+      "calibration": {
+        "method": "platt",
+        "a": 0.5885905873324683,
+        "b": 0.33701988011088235,
+        "fitted_on": "tournament out-of-fold winner probabilities",
+        "oof_ece_before": 0.0229546726763921,
+        "oof_ece_after_crossfit": 0.007614336700910544,
+        "oof_log_loss_before": 0.1518567154005208,
+        "oof_log_loss_after_crossfit": 0.15031599813433835
+      },
+      "threshold": 0.33,
+      "threshold_rule": "maximises out-of-fold macro-F1 (cross-fitted calibrated probabilities)",
+      "training": {
+        "windows": 5268,
+        "subjects": 15,
+        "datasets": [
+          "wesad"
+        ]
+      },
+      "tournament": {
+        "winner": "minirocket",
+        "reason": "minirocket better: subject-bootstrap 95% CI of macro-F1 difference excludes 0"
+      },
+      "path": "stress/2.0.0"
+    },
+    "hr_trust": {
+      "head": "hr_trust",
+      "version": "2.0.0",
+      "created_utc": "2026-10-30T05:14:11+00:00",
+      "package_version": "2.0.0.dev0",
+      "feature_set": "hr_trust",
+      "window_frames": 8,
+      "features": [
+        "bpm_last",
+        "bpm_std",
+        "bpm_range",
+        "bpm_missing_frac",
+        "beats_vs_expected",
+        "no_rr_frac",
+        "rr_cv",
+        "rr_succ_mad",
+        "hr_from_rr_vs_bpm",
+        "acc_std_mean",
+        "acc_std_max",
+        "acc_peak"
+      ],
+      "sequence_shape": [
+        8,
+        6
+      ],
+      "classes": [
+        "unreliable",
+        "reliable"
+      ],
+      "members": [
+        "cnn1d",
+        "extratrees"
+      ],
+      "combine": "mean",
+      "params": {
+        "cnn1d": {
+          "channels": 32,
+          "dropout": 0.31939631788866646,
+          "lr": 0.0004296748115469076,
+          "weight_decay": 2.9375384576328295e-05
+        },
+        "extratrees": {
+          "n_estimators": 100,
+          "max_features": 0.43371571882817456,
+          "min_samples_leaf": 2
+        }
+      },
+      "files": {
+        "model_cnn1d.onnx": {
+          "sha256": "a1a4a5cd167c1e6c4306959f57544b5dd76977691dbde4ea46ed8e54896e0ba3",
+          "bytes": 63341
+        },
+        "model_extratrees.onnx": {
+          "sha256": "6b94487963387c4a597f60d9bf029a4d43c9b826d1b2dcc19a20a34c258f6cf1",
+          "bytes": 75144736
+        },
+        "forest_extratrees.npz": {
+          "sha256": "0e515f21565090a5efc0c2c53290eb60635aa3988f4a6479979d6d14e4b7163c",
+          "bytes": 64947381,
+          "derived_from": "model_extratrees.onnx",
+          "parity_vs_onnx": {
+            "rows": 4000,
+            "max_abs_proba_diff": 2.4959444999694824e-07,
+            "argmax_flip_rate": 0.0
+          }
+        }
+      },
+      "calibration": {
+        "method": "platt",
+        "a": 1.1353111719479818,
+        "b": 0.5260593424269081,
+        "fitted_on": "tournament out-of-fold winner probabilities",
+        "oof_ece_before": 0.014837022924182371,
+        "oof_ece_after_crossfit": 0.004492716668551476,
+        "oof_log_loss_before": 0.4262190611178351,
+        "oof_log_loss_after_crossfit": 0.4088554055999057
+      },
+      "threshold": 0.59,
+      "threshold_rule": "maximises out-of-fold macro-F1 (cross-fitted calibrated probabilities)",
+      "training": {
+        "windows": 72003,
+        "subjects": 30,
+        "datasets": [
+          "ppg_dalia",
+          "wesad"
+        ]
+      },
+      "tournament": {
+        "winner": "vote(cnn1d+extratrees)",
+        "reason": "no significant difference (95% CI [-0.004, +0.011] includes 0); tie broken by efficiency -> cnn1d (smaller/faster); soft-vote cnn1d+extratrees significantly better than cnn1d (CI [+0.006, +0.013]) -> adopted"
+      },
+      "path": "hr_trust/2.0.0"
+    },
+    "rhythm": {
+      "head": "rhythm",
+      "version": "2.0.0",
+      "created_utc": "2026-10-30T05:30:15+00:00",
+      "package_version": "2.0.0.dev0",
+      "feature_set": "rhythm",
+      "window_frames": 40,
+      "features": [
+        "rr_n",
+        "rr_mean",
+        "rr_sdnn",
+        "rr_rmssd",
+        "rr_pnn50",
+        "rr_cv",
+        "rr_sd1",
+        "rr_sd2",
+        "rr_sd1_sd2",
+        "rr_tpr",
+        "rr_sampen",
+        "rr_big_jump_frac",
+        "rr_max_min_ratio",
+        "rr_mad_rel",
+        "hr_mean"
+      ],
+      "sequence_shape": [
+        64,
+        2
+      ],
+      "classes": [
+        "regular",
+        "abnormal"
+      ],
+      "members": [
+        "cnn1d"
+      ],
+      "combine": "single",
+      "params": {
+        "cnn1d": {
+          "channels": 32,
+          "dropout": 0.2,
+          "lr": 0.001,
+          "weight_decay": 0.0001
+        }
+      },
+      "files": {
+        "model_cnn1d.onnx": {
+          "sha256": "cdb9e6e4a0fb48f44697330c62ead89133a3bb2cbee784be5d908b9cb8ea3a2c",
+          "bytes": 61773
+        }
+      },
+      "calibration": {
+        "method": "platt",
+        "a": 0.8511953927442791,
+        "b": -0.1559641489844982,
+        "fitted_on": "tournament out-of-fold winner probabilities",
+        "oof_ece_before": 0.014398651100183974,
+        "oof_ece_after_crossfit": 0.008393128765879292,
+        "oof_log_loss_before": 0.1799468858154266,
+        "oof_log_loss_after_crossfit": 0.1811666211651724
+      },
+      "threshold": 0.61,
+      "threshold_rule": "maximises out-of-fold macro-F1 (cross-fitted calibrated probabilities)",
+      "training": {
+        "windows": 126579,
+        "subjects": 155,
+        "datasets": [
+          "afdb",
+          "ltafdb",
+          "mitbih"
+        ]
+      },
+      "tournament": {
+        "winner": "cnn1d",
+        "reason": "cnn1d better: subject-bootstrap 95% CI of macro-F1 difference excludes 0"
+      },
+      "path": "rhythm/2.0.0"
+    },
+    "activity": {
+      "head": "activity",
+      "version": "2.0.0",
+      "created_utc": "2026-10-30T06:05:14+00:00",
+      "package_version": "2.0.0.dev0",
+      "feature_set": "activity",
+      "window_frames": 20,
+      "features": [
+        "acc_std_mean",
+        "acc_std_max",
+        "acc_std_p90",
+        "acc_max_mean",
+        "acc_max_max",
+        "acc_min_min",
+        "acc_level_dev",
+        "tilt_mean",
+        "tilt_std",
+        "moving_frac",
+        "bpm_mean",
+        "bpm_rel"
+      ],
+      "sequence_shape": [
+        20,
+        6
+      ],
+      "classes": [
+        "rest",
+        "light",
+        "active"
+      ],
+      "members": [
+        "extratrees"
+      ],
+      "combine": "single",
+      "params": {
+        "extratrees": {
+          "n_estimators": 100,
+          "max_features": 0.43371571882817456,
+          "min_samples_leaf": 2
+        }
+      },
+      "files": {
+        "model_extratrees.onnx": {
+          "sha256": "2a91a93f31b27236c134291a34efbfbd561213ef916a97a202aab79282722f44",
+          "bytes": 65637022
+        },
+        "forest_extratrees.npz": {
+          "sha256": "c090884920949bcd028c95f9057605a0f7e0c768ab7829ac4eb285fbf40b2807",
+          "bytes": 54090457,
+          "derived_from": "model_extratrees.onnx",
+          "parity_vs_onnx": {
+            "rows": 4000,
+            "max_abs_proba_diff": 2.980232238769531e-07,
+            "argmax_flip_rate": 0.0
+          }
+        }
+      },
+      "calibration": {
+        "method": "temperature",
+        "T": 0.9170011843106313,
+        "fitted_on": "tournament out-of-fold winner probabilities",
+        "oof_ece_before": 0.021956660885027283,
+        "oof_ece_after_crossfit": 0.010581590970247523,
+        "oof_log_loss_before": 0.3134367903110951,
+        "oof_log_loss_after_crossfit": 0.31134234514870107
+      },
+      "threshold": null,
+      "threshold_rule": "argmax (multi-class)",
+      "training": {
+        "windows": 90349,
+        "subjects": 166,
+        "datasets": [
+          "capture24",
+          "ppg_dalia"
+        ]
+      },
+      "tournament": {
+        "winner": "extratrees",
+        "reason": "extratrees better: subject-bootstrap 95% CI of macro-F1 difference excludes 0"
+      },
+      "path": "activity/2.0.0"
+    },
+    "fall": {
+      "head": "fall",
+      "version": "2.0.0",
+      "created_utc": "2026-10-30T06:13:18+00:00",
+      "package_version": "2.0.0.dev0",
+      "feature_set": "fall_acc_only",
+      "window_frames": 4,
+      "features": [
+        "peak_g",
+        "trough_g",
+        "trough_before_peak_g",
+        "peak_minus_trough",
+        "peak_rel_median",
+        "peak_rel_mean_level",
+        "peak_pos",
+        "std_max",
+        "std_after_peak",
+        "level_dev_last",
+        "tilt_change",
+        "tilt_change_after_peak"
+      ],
+      "sequence_shape": [
+        4,
+        5
+      ],
+      "classes": [
+        "no_fall",
+        "fall"
+      ],
+      "members": [
+        "extratrees",
+        "cnn1d"
+      ],
+      "combine": "mean",
+      "params": {
+        "extratrees": {
+          "n_estimators": 100,
+          "max_features": 0.43371571882817456,
+          "min_samples_leaf": 2
+        },
+        "cnn1d": {
+          "channels": 32,
+          "dropout": 0.2,
+          "lr": 0.001,
+          "weight_decay": 0.0001
+        }
+      },
+      "files": {
+        "model_extratrees.onnx": {
+          "sha256": "4b31cb7c058cf94c0bbd6b19383792f4f8b640e8c7027befa289d465ddfb11f9",
+          "bytes": 6662850
+        },
+        "model_cnn1d.onnx": {
+          "sha256": "a30bc9a48a98902f089462dec91b42d69f381c4f9f8308f57ab6fc5e756d3ac2",
+          "bytes": 62949
+        },
+        "forest_extratrees.npz": {
+          "sha256": "5a80c23a61f58c5def2b64df0bc1c034ebfd7819556c6b38e1d8d91d0bd7c69a",
+          "bytes": 5838041,
+          "derived_from": "model_extratrees.onnx",
+          "parity_vs_onnx": {
+            "rows": 4000,
+            "max_abs_proba_diff": 2.384185791015625e-07,
+            "argmax_flip_rate": 0.0
+          }
+        }
+      },
+      "calibration": {
+        "method": "platt",
+        "a": 1.4642619545647209,
+        "b": -1.367902247728989,
+        "fitted_on": "tournament out-of-fold winner probabilities",
+        "oof_ece_before": 0.005784943434529765,
+        "oof_ece_after_crossfit": 0.0005427579975396838,
+        "oof_log_loss_before": 0.019849316279140078,
+        "oof_log_loss_after_crossfit": 0.01323477175900814
+      },
+      "threshold": 0.72,
+      "threshold_rule": "most sensitive threshold with OOF daily-life false alarms \u2264 1.0/8 h",
+      "training": {
+        "windows": 561095,
+        "subjects": 190,
+        "datasets": [
+          "capture24",
+          "pamap2",
+          "ppg_dalia",
+          "sisfall",
+          "upfall",
+          "wesad"
+        ]
+      },
+      "tournament": {
+        "winner": "vote(extratrees+cnn1d)",
+        "reason": "extratrees better: subject-bootstrap 95% CI of macro-F1 difference excludes 0; soft-vote extratrees+cnn1d significantly better than extratrees (CI [+0.009, +0.034]) -> adopted"
+      },
+      "path": "fall/2.0.0"
+    }
+  },
+  "updated_utc": "2026-10-30T06:13:19+00:00"
+}

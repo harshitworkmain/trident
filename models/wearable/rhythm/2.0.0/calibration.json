@@ -1,0 +1,14 @@
+{
+  "calibration": {
+    "method": "platt",
+    "a": 0.8511953927442791,
+    "b": -0.1559641489844982,
+    "fitted_on": "tournament out-of-fold winner probabilities",
+    "oof_ece_before": 0.014398651100183974,
+    "oof_ece_after_crossfit": 0.008393128765879292,
+    "oof_log_loss_before": 0.1799468858154266,
+    "oof_log_loss_after_crossfit": 0.1811666211651724
+  },
+  "threshold": 0.61,
+  "threshold_rule": "maximises out-of-fold macro-F1 (cross-fitted calibrated probabilities)"
+}
